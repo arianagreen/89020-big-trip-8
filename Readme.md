@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Александра Шумкова](https://up.htmlacademy.ru/ecmascript/8/user/89020).
-* Наставник: [Дмитрий Рябинин](https://htmlacademy.ru/profile/id63289).
+* Наставник: [Дмитрий Рябинин](https://up.htmlacademy.ru/ecmascript/8/user/63289).
 
 ---
 

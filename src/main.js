@@ -1,6 +1,8 @@
 import makeFilter from './make-filter.js';
 import makePoint from './make-point.js';
 
+import pointsData from './data.js';
+
 const pointData = {
   icon: `🚕`,
   title: `Taxi to Airport`,
@@ -42,25 +44,26 @@ const renderFilters = (dist) => {
   dist.insertAdjacentHTML(`beforeend`, filters);
 };
 
-const renderPoints = (dist, count) => {
+const renderPoints = (dist, array) => {
   let points = ``;
-  for (let i = 0; i < count; i++) {
-    points += makePoint(pointData);
+  for (const point of array) {
+    points += makePoint(point);
   }
   dist.insertAdjacentHTML(`beforeend`, points);
 };
 
 const onFilterClick = () => {
-  let count = getRandomInt(1, 7);
+  let count = getRandomInt(1, 6);
+  const filterPoints = new Array.From(...pointsData).slice(0, count);
   pointsContainer.innerHTML = ``;
-  renderPoints(pointsContainer, count);
+  renderPoints(pointsContainer, filterPoints);
 };
 
 filterContainer.innerHTML = ``;
 pointsContainer.innerHTML = ``;
 
 renderFilters(filterContainer);
-renderPoints(pointsContainer, 4);
+renderPoints(pointsContainer, pointsData);
 
 const filterItems = filterContainer.querySelectorAll(`.trip-filter__item`);
 

@@ -3,30 +3,6 @@ import makePoint from './make-point.js';
 
 import pointsData from './data.js';
 
-const pointData = {
-  icon: `🚕`,
-  title: `Taxi to Airport`,
-  time: {
-    from: `10`,
-    to: `11`
-  },
-  duration: `1h 30m`,
-  currency: `&euro;`,
-  price: `20`,
-  offers: [
-    {
-      title: `Order UBER`,
-      currency: `&euro;`,
-      price: `20`,
-    },
-    {
-      title: `Upgrade to business`,
-      currency: `&euro;`,
-      price: `20`,
-    }
-  ]
-};
-
 const filterNames = [`everything`, `future`, `past`];
 
 const filterContainer = document.querySelector(`.trip-filter`);
@@ -54,7 +30,7 @@ const renderPoints = (dist, array) => {
 
 const onFilterClick = () => {
   let count = getRandomInt(1, 6);
-  const filterPoints = new Array.From(...pointsData).slice(0, count);
+  const filterPoints = pointsData.slice(0, count);
   pointsContainer.innerHTML = ``;
   renderPoints(pointsContainer, filterPoints);
 };

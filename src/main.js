@@ -1,29 +1,7 @@
 import makeFilter from './make-filter.js';
 import makePoint from './make-point.js';
 
-const pointData = {
-  icon: `🚕`,
-  title: `Taxi to Airport`,
-  time: {
-    from: `10`,
-    to: `11`
-  },
-  duration: `1h 30m`,
-  currency: `&euro;`,
-  price: `20`,
-  offers: [
-    {
-      title: `Order UBER`,
-      currency: `&euro;`,
-      price: `20`,
-    },
-    {
-      title: `Upgrade to business`,
-      currency: `&euro;`,
-      price: `20`,
-    }
-  ]
-};
+import pointsData from './data.js';
 
 const filterNames = [`everything`, `future`, `past`];
 
@@ -42,25 +20,26 @@ const renderFilters = (dist) => {
   dist.insertAdjacentHTML(`beforeend`, filters);
 };
 
-const renderPoints = (dist, count) => {
+const renderPoints = (dist, array) => {
   let points = ``;
-  for (let i = 0; i < count; i++) {
-    points += makePoint(pointData);
+  for (const point of array) {
+    points += makePoint(point);
   }
   dist.insertAdjacentHTML(`beforeend`, points);
 };
 
 const onFilterClick = () => {
-  let count = getRandomInt(1, 7);
+  let count = getRandomInt(1, 6);
+  const filterPoints = pointsData.slice(0, count);
   pointsContainer.innerHTML = ``;
-  renderPoints(pointsContainer, count);
+  renderPoints(pointsContainer, filterPoints);
 };
 
 filterContainer.innerHTML = ``;
 pointsContainer.innerHTML = ``;
 
 renderFilters(filterContainer);
-renderPoints(pointsContainer, 4);
+renderPoints(pointsContainer, pointsData);
 
 const filterItems = filterContainer.querySelectorAll(`.trip-filter__item`);
 

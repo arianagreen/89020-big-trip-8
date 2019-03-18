@@ -12,6 +12,7 @@ class PointEdit {
     this._endTime = data.end;
     this._element = null;
     this._onSubmit = null;
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
   }
 
   _onSubmitButtonClick(evt) {
@@ -114,12 +115,11 @@ class PointEdit {
             <h3 class="point__details-title">offers</h3>
 
             <div class="point__offers-wrap">
-              ${(Array.from(this._offers).map((offer) => (
-                `<input class="point__offers-input visually-hidden" type="checkbox" id="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="add-luggage">
+              ${(Array.from(this._offers).map((offer) => (`
+                <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="add-luggage">
                 <label for="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
                   <span class="point__offer-service">${offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
-                </label>`.trim()
-              ))).join(``)}
+                </label>`.trim()))).join(``)}
             </div>
 
           </section>
@@ -144,7 +144,7 @@ class PointEdit {
 
   bind() {
     this._element.querySelector(`.point__button--save`)
-                .addEventListener(`submit`, this._onSubmitButtonClick.bind(this));
+                .addEventListener(`submit`, this._onSubmitButtonClick);
   }
 
   unbind() {

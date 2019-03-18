@@ -13,6 +13,7 @@ class Point {
     this._state = ``;
     this._element = null;
     this._onEdit = null;
+    this._onElementClick = this._onElementClick.bind(this);
   }
 
   _onElementClick() {
@@ -72,7 +73,7 @@ class Point {
   }
 
   bind() {
-    this._element.addEventListener(`click`, this._onElementClick.bind(this));
+    this._element.addEventListener(`click`, this._onElementClick);
   }
 
   render() {

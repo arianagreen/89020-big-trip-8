@@ -47,7 +47,7 @@ export default new Array(5)
         icon: `🍴`,
       }
     ][Math.floor(Math.random() * 10)],
-    destination: [`airport`, `Amsterdam`, `Geneva`, `Chamonix`, `Geneva`, `Amsterdam`][Math.floor(Math.random() * 6)],
+    destination: [`airport`, `Amsterdam`, `Geneva`, `Chamonix`, `hotel`][Math.floor(Math.random() * 5)],
     picture: `http://picsum.photos/300/150?r=${Math.random()}`,
     offers: new Set([
       {

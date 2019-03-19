@@ -1,5 +1,8 @@
 import makeFilter from './make-filter.js';
-import makePoint from './make-point.js';
+// import makePoint from './make-point.js';
+
+import Point from './point.js';
+import PointEdit from './point-edit.js';
 
 import pointsData from './data.js';
 
@@ -21,11 +24,26 @@ const renderFilters = (dist) => {
 };
 
 const renderPoints = (dist, array) => {
-  let points = ``;
-  for (const point of array) {
-    points += makePoint(point);
+  let fragment = document.createDocumentFragment();
+  for (const item of array) {
+    const pointComponent = new Point(item);
+    const editPointComponent = new PointEdit(item);
+
+    fragment.appendChild(pointComponent.render());
+
+    pointComponent.onEdit = () => {
+      editPointComponent.render();
+      dist.replaceChild(editPointComponent.element, pointComponent.element);
+      pointComponent.unrender();
+    };
+
+    editPointComponent.onSubmit = () => {
+      pointComponent.render();
+      dist.replaceChild(pointComponent.element, editPointComponent.element);
+      editPointComponent.unrender();
+    };
   }
-  dist.insertAdjacentHTML(`beforeend`, points);
+  dist.appendChild(fragment);
 };
 
 const onFilterClick = () => {

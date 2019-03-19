@@ -1,7 +1,8 @@
-import createElement from './create-element.js';
+import Component from './component.js';
 
-class PointEdit {
+class PointEdit extends Component {
   constructor(data) {
+    super();
     this._event = data.event;
     this._destination = data.destination;
     this._picture = data.picture;
@@ -9,8 +10,7 @@ class PointEdit {
     this._description = data.description;
     this._startTime = data.startTime;
     this._price = data.price;
-    this._endTime = data.end;
-    this._element = null;
+    this._endTime = this.getEndTime(data.startTime);
     this._onSubmit = null;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
   }
@@ -22,14 +22,6 @@ class PointEdit {
 
   set onSubmit(fn) {
     this._onSubmit = fn;
-  }
-
-  get element() {
-    return this._element;
-  }
-
-  get end() {
-    return new Date(Date.parse(this.startTime) + Math.random() * 2 * 60 * 60 * 1000);
   }
 
   get template() {
@@ -136,12 +128,6 @@ class PointEdit {
     </article>`;
   }
 
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
   bind() {
     this._element.querySelector(`.point__button--save`)
                 .addEventListener(`submit`, this._onSubmitButtonClick);
@@ -150,11 +136,6 @@ class PointEdit {
   unbind() {
     this._element.querySelector(`.point__button--save`)
                 .removeEventListener(`click`, this._onSubmitButtonClick);
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }
 

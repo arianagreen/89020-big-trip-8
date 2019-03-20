@@ -1,7 +1,8 @@
-import createElement from './create-element.js';
+import Component from './component.js';
 
-class Point {
+class Point extends Component {
   constructor(data) {
+    super();
     this._event = data.event;
     this._destination = data.destination;
     this._picture = data.picture;
@@ -9,9 +10,8 @@ class Point {
     this._description = data.description;
     this._startTime = data.startTime;
     this._price = data.price;
-    this._endTime = data.end;
-    this._state = ``;
-    this._element = null;
+    // this._endTime = data.end;
+    this._endTime = this.getEndTime(data.startTime);
     this._onEdit = null;
     this._onElementClick = this._onElementClick.bind(this);
   }
@@ -22,14 +22,6 @@ class Point {
 
   set onEdit(fn) {
     this._onEdit = fn;
-  }
-
-  get element() {
-    return this._element;
-  }
-
-  get end() {
-    return new Date(Date.parse(this.startTime) + Math.random() * 2 * 60 * 60 * 1000);
   }
 
   get duration() {
@@ -76,19 +68,8 @@ class Point {
     this._element.addEventListener(`click`, this._onElementClick);
   }
 
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
   unbind() {
     this._element.removeEventListener(`click`, this._onElementClick);
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }
 

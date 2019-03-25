@@ -7,7 +7,17 @@ class Component {
     }
 
     this._element = null;
-    this._state = ``;
+    this._state = {};
+  }
+
+  getTotalPrice() {
+    this._totalPrice = this._price;
+    for (const offer of this._offers) {
+      if (offer.isChecked) {
+        this._totalPrice += offer.price;
+      }
+    }
+    return this._totalPrice;
   }
 
   getEndTime(start) {
@@ -36,6 +46,8 @@ class Component {
     this.unbind();
     this._element = null;
   }
+
+  update() {}
 }
 
 export default Component;

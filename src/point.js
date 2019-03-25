@@ -1,19 +1,24 @@
 import Component from './component.js';
+import {BigData} from './data.js';
+import utils from './utils.js';
+import createElement from './create-element.js';
 
 class Point extends Component {
   constructor(data) {
     super();
     this._event = data.event;
+    // this._icon = data.icon;
+    this._icon = BigData.icons[data.event];
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
     this._description = data.description;
     this._startTime = data.startTime;
     this._price = data.price;
-    // this._endTime = data.end;
     this._endTime = this.getEndTime(data.startTime);
     this._onEdit = null;
     this._onElementClick = this._onElementClick.bind(this);
+    this._state.isFavorite = false;
   }
 
   _onElementClick() {
@@ -51,15 +56,18 @@ class Point extends Component {
     };
 
     return `<article class="trip-point">
-      <i class="trip-icon">${this._event.icon}</i>
-      <h3 class="trip-point__title">${this._event.type} to ${this._destination}</h3>
+      <i class="trip-icon">${this._icon}</i>
+      <h3 class="trip-point__title">${utils.capitalizeFirstLetter(this._event)} to ${this._destination}</h3>
       <p class="trip-point__schedule">
         <span class="trip-point__timetable">${this._startTime.toLocaleString(`en`, timeOptions)}&nbsp;&mdash; ${this._endTime.toLocaleString(`en`, timeOptions)}</span>
         <span class="trip-point__duration">${this.duration}</span>
       </p>
       <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
       <ul class="trip-point__offers">
-        ${(Array.from(this._offers).map((offer) => (`<li><button class="trip-point__offer">${offer.title} &plus;&euro;${offer.price}</button></li>`.trim()))).join(``)}
+        ${(Array.from(this._offers)
+          .filter((offer) => (offer.isChecked === true))
+          .map((offer) => (`<li><button class="trip-point__offer">${offer.title} &plus;&euro;${offer.price}</button></li>`).trim()))
+          .join(``)}
       </ul>
     </article>`;
   }
@@ -70,6 +78,16 @@ class Point extends Component {
 
   unbind() {
     this._element.removeEventListener(`click`, this._onElementClick);
+  }
+
+  update(data) {
+    this._event = data.event;
+    this._destination = data.destination;
+    this._icon = data.icon;
+    this._offers = data.offers;
+    // this._startTime = data.startTime;
+    this._price = data.price;
+    this._state.isFavorite = data.isFavorite;
   }
 }
 

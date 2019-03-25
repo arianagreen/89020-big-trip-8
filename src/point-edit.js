@@ -1,23 +1,88 @@
 import Component from './component.js';
+import {BigData} from './data.js';
+import utils from './utils.js';
+import createElement from './create-element.js';
 
 class PointEdit extends Component {
   constructor(data) {
     super();
     this._event = data.event;
+    this._icon = BigData.icons[data.event];
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
     this._description = data.description;
     this._startTime = data.startTime;
     this._price = data.price;
+    this._state.isFavorite = false;
     this._endTime = this.getEndTime(data.startTime);
     this._onSubmit = null;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+    this._onChangeWay = this._onChangeWay.bind(this);
+    // this._onChangeOffer = this._onChangeOffer.bind(this);
   }
+
+  _processForm(formData) {
+    this._offers.forEach((offer) => (offer.isChecked = false));
+    const entry = {
+      event: ``,
+      destination: ``,
+      icon: ``,
+      // startTime: new Date(),
+      // endTime: new Date(),
+      offers: this._offers,
+      price: ``,
+      isFavorite: false
+    };
+
+    const pointEditMapper = PointEdit.createMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      pointEditMapper[property] && pointEditMapper[property](value);
+    }
+
+    entry.icon = BigData.tripTypes[entry.event].icon;
+    return entry;
+  }
+
+  _onChangeDate() {}
+
+  _onChangeFavorite() {
+    this._state.isFavorite = !this._state.isFavorite;
+  }
+
+  _onChangeWay(evt) {
+    this._event = evt.target.value;
+    this._icon = BigData.icons[evt.target.value];
+
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
+  }
+
+  // _onChangeOffer(evt) {
+  //   const priceInput = this._element.querySelector(`.point__input[name=price]`);
+  //   const price = parseInt(priceInput.value, 10);
+  //   const offerPrice = parseInt(
+  //       evt.target.nextElementSibling.querySelector(`.point__offer-price`).innerHTML,
+  //       10);
+  //   priceInput.value = evt.target.checked ? price + offerPrice : price - offerPrice;
+  // }
 
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
-    typeof this._onSubmit === `function` && this._onSubmit();
+
+    const formData = new FormData(this._element.querySelector(`form`));
+    const newData = this._processForm(formData);
+    console.log(newData);
+    typeof this._onSubmit === `function` && this._onSubmit(newData);
+
+    this.update(newData);
+  }
+
+  _partialUpdate() {
+    this._element.innerHTML = createElement(this.template).innerHTML;
   }
 
   set onSubmit(fn) {
@@ -40,43 +105,31 @@ class PointEdit extends Component {
           </label>
 
           <div class="travel-way">
-            <label class="travel-way__label" for="travel-way__toggle">${this._event.icon}</label>
+            <label class="travel-way__label" for="travel-way__toggle">${this._icon}</label>
 
             <input type="checkbox" class="travel-way__toggle visually-hidden" id="travel-way__toggle">
 
             <div class="travel-way__select">
               <div class="travel-way__select-group">
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-taxi" name="travel-way" value="taxi">
-                <label class="travel-way__select-label" for="travel-way-taxi">🚕 taxi</label>
-
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-bus" name="travel-way" value="bus">
-                <label class="travel-way__select-label" for="travel-way-bus">🚌 bus</label>
-
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-train" name="travel-way" value="train">
-                <label class="travel-way__select-label" for="travel-way-train">🚂 train</label>
-
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-flight" name="travel-way" value="train" checked>
-                <label class="travel-way__select-label" for="travel-way-flight">✈️ flight</label>
+                ${BigData.moveEvents.map((event) => (`
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
+                  <label class="travel-way__select-label" for="travel-way-${event}">${BigData.icons[event]} ${event}</label>`.trim())).join(``)}
               </div>
 
               <div class="travel-way__select-group">
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in" name="travel-way" value="check-in">
-                <label class="travel-way__select-label" for="travel-way-check-in">🏨 check-in</label>
-
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travel-way" value="sight-seeing">
-                <label class="travel-way__select-label" for="travel-way-sightseeing">🏛 sightseeing</label>
+              ${BigData.stopEvents.map((event) => (`
+                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
+                <label class="travel-way__select-label" for="travel-way-${event}">${BigData.icons[event]} ${event}</label>`.trim())).join(``)}
               </div>
             </div>
           </div>
 
           <div class="point__destination-wrap">
-            <label class="point__destination-label" for="destination">Flight to</label>
+            <label class="point__destination-label" for="destination">${utils.capitalizeFirstLetter(this._event)} to</label>
             <input class="point__destination-input" list="destination-select" id="destination" value="Chamonix" name="destination">
             <datalist id="destination-select">
-              <option value="airport"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
-              <option value="hotel"></option>
+              ${(BigData.destinations.map((destination) => (`
+                <option value="${destination}"></option>`.trim()))).join(``)}
             </datalist>
           </div>
 
@@ -97,7 +150,7 @@ class PointEdit extends Component {
           </div>
 
           <div class="paint__favorite-wrap">
-            <input type="checkbox" class="point__favorite-input visually-hidden" id="favorite" name="favorite">
+            <input type="checkbox" class="point__favorite-input visually-hidden" id="favorite" name="favorite" ${this._state.isFavorite ? `checked` : ``}>
             <label class="point__favorite" for="favorite">favorite</label>
           </div>
         </header>
@@ -108,7 +161,7 @@ class PointEdit extends Component {
 
             <div class="point__offers-wrap">
               ${(Array.from(this._offers).map((offer) => (`
-                <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="add-luggage">
+                <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" ${offer.isChecked ? `checked` : ``}>
                 <label for="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
                   <span class="point__offer-service">${offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
                 </label>`.trim()))).join(``)}
@@ -130,12 +183,68 @@ class PointEdit extends Component {
 
   bind() {
     this._element.querySelector(`.point__button--save`)
-                .addEventListener(`submit`, this._onSubmitButtonClick);
+                .addEventListener(`click`, this._onSubmitButtonClick);
+
+    const travelWaySelects = this._element.querySelectorAll(`.travel-way__select-input`);
+    for (const travelWaySelect of travelWaySelects) {
+      travelWaySelect.addEventListener(`click`, this._onChangeWay);
+    }
+
+    // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
+    // for (const offerSelect of offerSelects) {
+    //   offerSelect.addEventListener(`change`, this._onChangeOffer);
+    // }
   }
 
   unbind() {
     this._element.querySelector(`.point__button--save`)
                 .removeEventListener(`click`, this._onSubmitButtonClick);
+
+    const travelWaySelects = this._element.querySelectorAll(`.travel-way__select-input`);
+    for (const travelWaySelect of travelWaySelects) {
+      travelWaySelect.removeEventListener(`click`, this._onChangeWay);
+    }
+
+    // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
+    // for (const offerSelect of offerSelects) {
+    //   offerSelect.removeEventListener(`change`, this._onChangeOffer);
+    // }
+  }
+
+  update(data) {
+    this._event = data.event;
+    this._destination = data.destination;
+    this._icon = data.icon;
+    // this._offers = data.offers;
+    // this._startTime = data.startTime;
+    this._price = data.price;
+    this._state.isFavorite = data.isFavorite;
+  }
+
+  static createMapper(target) {
+    return {
+      'travel-way': (value) => {
+        target.event = value;
+      },
+      'destination': (value) => {
+        target.destination = value;
+      },
+      'icon': BigData.icons[this.event],
+      // 'time': (value) =>
+      'offer': (value) => {
+        for (const offer of target.offers) {
+          if (value === offer.title.replace(/\s+/g, `-`).toLowerCase()) {
+            offer.isChecked = true;
+          }
+        }
+      },
+      'price': (value) => {
+        target.price = value;
+      },
+      'favorite': (value) => {
+        target.isFavorite = value;
+      }
+    };
   }
 }
 

@@ -1,13 +1,13 @@
 import Component from './component.js';
 import {BigData} from './data.js';
-import utils from './utils.js';
 import createElement from './create-element.js';
+import flatpickr from "flatpickr";
 
 class PointEdit extends Component {
   constructor(data) {
     super();
     this._event = data.event;
-    this._icon = BigData.icons[data.event];
+    this._icon = BigData.tripTypes[data.event].icon;
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
@@ -23,11 +23,14 @@ class PointEdit extends Component {
   }
 
   _processForm(formData) {
-    this._offers.forEach((offer) => (offer.isChecked = false));
+    for (const offer of this._offers) {
+      offer.isChecked = false;
+    }
+
+    console.log(this._offers);
     const entry = {
       event: ``,
       destination: ``,
-      icon: ``,
       // startTime: new Date(),
       // endTime: new Date(),
       offers: this._offers,
@@ -39,6 +42,7 @@ class PointEdit extends Component {
 
     for (const pair of formData.entries()) {
       const [property, value] = pair;
+      console.log(value);
       pointEditMapper[property] && pointEditMapper[property](value);
     }
 
@@ -54,7 +58,7 @@ class PointEdit extends Component {
 
   _onChangeWay(evt) {
     this._event = evt.target.value;
-    this._icon = BigData.icons[evt.target.value];
+    this._icon = BigData.tripTypes[evt.target.value].icon;
 
     this.unbind();
     this._partialUpdate();
@@ -75,7 +79,6 @@ class PointEdit extends Component {
 
     const formData = new FormData(this._element.querySelector(`form`));
     const newData = this._processForm(formData);
-    console.log(newData);
     typeof this._onSubmit === `function` && this._onSubmit(newData);
 
     this.update(newData);
@@ -113,19 +116,19 @@ class PointEdit extends Component {
               <div class="travel-way__select-group">
                 ${BigData.moveEvents.map((event) => (`
                   <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
-                  <label class="travel-way__select-label" for="travel-way-${event}">${BigData.icons[event]} ${event}</label>`.trim())).join(``)}
+                  <label class="travel-way__select-label" for="travel-way-${event}">${BigData.tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
               </div>
 
               <div class="travel-way__select-group">
               ${BigData.stopEvents.map((event) => (`
                 <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
-                <label class="travel-way__select-label" for="travel-way-${event}">${BigData.icons[event]} ${event}</label>`.trim())).join(``)}
+                <label class="travel-way__select-label" for="travel-way-${event}">${BigData.tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
               </div>
             </div>
           </div>
 
           <div class="point__destination-wrap">
-            <label class="point__destination-label" for="destination">${utils.capitalizeFirstLetter(this._event)} to</label>
+            <label class="point__destination-label" for="destination">${BigData.tripTypes[this._event].text}</label>
             <input class="point__destination-input" list="destination-select" id="destination" value="Chamonix" name="destination">
             <datalist id="destination-select">
               ${(BigData.destinations.map((destination) => (`
@@ -190,6 +193,15 @@ class PointEdit extends Component {
       travelWaySelect.addEventListener(`click`, this._onChangeWay);
     }
 
+    const timeInput = this._element.querySelector(`.point__time .point__input`);
+
+    flatpickr(timeInput, {
+      enableTime: true,
+      noCalendar: true,
+      time_24hr: true,
+      dateFormat: "H:i"
+    });
+
     // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
     // for (const offerSelect of offerSelects) {
     //   offerSelect.addEventListener(`change`, this._onChangeOffer);
@@ -215,7 +227,7 @@ class PointEdit extends Component {
     this._event = data.event;
     this._destination = data.destination;
     this._icon = data.icon;
-    // this._offers = data.offers;
+    this._offers = data.offers;
     // this._startTime = data.startTime;
     this._price = data.price;
     this._state.isFavorite = data.isFavorite;
@@ -229,7 +241,6 @@ class PointEdit extends Component {
       'destination': (value) => {
         target.destination = value;
       },
-      'icon': BigData.icons[this.event],
       // 'time': (value) =>
       'offer': (value) => {
         for (const offer of target.offers) {

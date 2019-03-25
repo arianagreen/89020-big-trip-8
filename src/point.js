@@ -1,14 +1,12 @@
 import Component from './component.js';
 import {BigData} from './data.js';
-import utils from './utils.js';
-import createElement from './create-element.js';
 
 class Point extends Component {
   constructor(data) {
     super();
     this._event = data.event;
     // this._icon = data.icon;
-    this._icon = BigData.icons[data.event];
+    this._icon = BigData.tripTypes[data.event].icon;
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
@@ -57,7 +55,7 @@ class Point extends Component {
 
     return `<article class="trip-point">
       <i class="trip-icon">${this._icon}</i>
-      <h3 class="trip-point__title">${utils.capitalizeFirstLetter(this._event)} to ${this._destination}</h3>
+      <h3 class="trip-point__title">${BigData.tripTypes[this._event].text} ${this._destination}</h3>
       <p class="trip-point__schedule">
         <span class="trip-point__timetable">${this._startTime.toLocaleString(`en`, timeOptions)}&nbsp;&mdash; ${this._endTime.toLocaleString(`en`, timeOptions)}</span>
         <span class="trip-point__duration">${this.duration}</span>

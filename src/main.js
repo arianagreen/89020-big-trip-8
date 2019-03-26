@@ -38,15 +38,13 @@ const renderPoints = (dist, array) => {
     };
 
     editPointComponent.onSubmit = (newData) => {
-      // const freshPointData = {};
-      // freshPointData.event = newData.event;
-      // freshPointData.destination = newData.destination;
-      // freshPointData.price = newData.price;
-      // freshPointData.isFavorite = newData.isFavorite;
-      // freshPointData.icon = newData.icon;
-      // freshPointData.offers = newData.offers;
-
       pointComponent.update(newData);
+      pointComponent.render();
+      dist.replaceChild(pointComponent.element, editPointComponent.element);
+      editPointComponent.unrender();
+    };
+
+    editPointComponent.onEsc = () => {
       pointComponent.render();
       dist.replaceChild(pointComponent.element, editPointComponent.element);
       editPointComponent.unrender();

@@ -2,6 +2,7 @@ import Component from './component.js';
 import {BigData} from './data.js';
 import createElement from './create-element.js';
 import flatpickr from "flatpickr";
+import utils from './utils.js';
 
 class PointEdit extends Component {
   constructor(data) {
@@ -15,9 +16,11 @@ class PointEdit extends Component {
     this._startTime = data.startTime;
     this._price = data.price;
     this._state.isFavorite = false;
-    this._endTime = this.getEndTime(data.startTime);
+    this._endTime = utils.getEndTime(data.startTime);
     this._onSubmit = null;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+    this._onEsc = null;
+    this._onEscClick = this._onEscClick.bind(this);
     this._onChangeWay = this._onChangeWay.bind(this);
     // this._onChangeOffer = this._onChangeOffer.bind(this);
   }
@@ -27,12 +30,10 @@ class PointEdit extends Component {
       offer.isChecked = false;
     }
 
-    console.log(this._offers);
     const entry = {
       event: ``,
       destination: ``,
-      // startTime: new Date(),
-      // endTime: new Date(),
+      startTime: new Date(),
       offers: this._offers,
       price: ``,
       isFavorite: false
@@ -42,11 +43,11 @@ class PointEdit extends Component {
 
     for (const pair of formData.entries()) {
       const [property, value] = pair;
-      console.log(value);
       pointEditMapper[property] && pointEditMapper[property](value);
     }
 
     entry.icon = BigData.tripTypes[entry.event].icon;
+    // entry.endTime = utils.getEndTime(new Date(entry.startTime));
     return entry;
   }
 
@@ -84,12 +85,22 @@ class PointEdit extends Component {
     this.update(newData);
   }
 
+  _onEscClick(evt) {
+    if (evt.keyCode === 27) {
+      typeof this._onEsc === `function` && this._onEsc();
+    }
+  }
+
   _partialUpdate() {
     this._element.innerHTML = createElement(this.template).innerHTML;
   }
 
   set onSubmit(fn) {
     this._onSubmit = fn;
+  }
+
+  set onEsc(fn) {
+    this._onEsc = fn;
   }
 
   get template() {
@@ -193,6 +204,8 @@ class PointEdit extends Component {
       travelWaySelect.addEventListener(`click`, this._onChangeWay);
     }
 
+    window.addEventListener(`keydown`, this._onEscClick);
+
     const timeInput = this._element.querySelector(`.point__time .point__input`);
 
     flatpickr(timeInput, {
@@ -216,6 +229,8 @@ class PointEdit extends Component {
     for (const travelWaySelect of travelWaySelects) {
       travelWaySelect.removeEventListener(`click`, this._onChangeWay);
     }
+
+    window.removeEventListener(`keydown`, this._onEscClick);
 
     // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
     // for (const offerSelect of offerSelects) {
@@ -248,6 +263,9 @@ class PointEdit extends Component {
             offer.isChecked = true;
           }
         }
+      },
+      'time': (value) => {
+        target.startTime = value;
       },
       'price': (value) => {
         target.price = value;

@@ -20,10 +20,6 @@ class Component {
     return this._totalPrice;
   }
 
-  getEndTime(start) {
-    return new Date(Date.parse(start) + Math.random() * 2 * 60 * 60 * 1000);
-  }
-
   get element() {
     return this._element;
   }

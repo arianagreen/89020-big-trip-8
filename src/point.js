@@ -1,5 +1,6 @@
 import Component from './component.js';
 import {BigData} from './data.js';
+import utils from './utils.js';
 
 class Point extends Component {
   constructor(data) {
@@ -13,7 +14,7 @@ class Point extends Component {
     this._description = data.description;
     this._startTime = data.startTime;
     this._price = data.price;
-    this._endTime = this.getEndTime(data.startTime);
+    this._endTime = utils.getEndTime(data.startTime);
     this._onEdit = null;
     this._onElementClick = this._onElementClick.bind(this);
     this._state.isFavorite = false;

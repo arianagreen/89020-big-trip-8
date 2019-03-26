@@ -151,7 +151,7 @@ export default new Array(5)
     offers: new Set(BigData[`offers`].sort(() => {
       return Math.random() - 0.5;
     })
-    .slice(0, Math.floor(Math.random() * 4))),
+    .slice(0, Math.floor(Math.random() * 4)).map((item) => Object.assign({}, item))),
     description: [
       `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
       `Cras aliquet varius magna, non porta ligula feugiat eget.`,

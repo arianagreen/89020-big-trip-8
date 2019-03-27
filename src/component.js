@@ -7,11 +7,7 @@ class Component {
     }
 
     this._element = null;
-    this._state = ``;
-  }
-
-  getEndTime(start) {
-    return new Date(Date.parse(start) + Math.random() * 2 * 60 * 60 * 1000);
+    this._state = {};
   }
 
   get element() {
@@ -36,6 +32,8 @@ class Component {
     this.unbind();
     this._element = null;
   }
+
+  update() {}
 }
 
 export default Component;

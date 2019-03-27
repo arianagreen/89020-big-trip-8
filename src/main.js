@@ -37,7 +37,14 @@ const renderPoints = (dist, array) => {
       pointComponent.unrender();
     };
 
-    editPointComponent.onSubmit = () => {
+    editPointComponent.onSubmit = (newData) => {
+      pointComponent.update(newData);
+      pointComponent.render();
+      dist.replaceChild(pointComponent.element, editPointComponent.element);
+      editPointComponent.unrender();
+    };
+
+    editPointComponent.onEsc = () => {
       pointComponent.render();
       dist.replaceChild(pointComponent.element, editPointComponent.element);
       editPointComponent.unrender();

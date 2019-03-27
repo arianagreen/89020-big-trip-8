@@ -1,5 +1,5 @@
 import Component from './component.js';
-import {BigData} from './data.js';
+import {destinations, moveEvents, stopEvents, tripTypes} from './data.js';
 import createElement from './create-element.js';
 import flatpickr from "flatpickr";
 import utils from './utils.js';
@@ -8,7 +8,7 @@ class PointEdit extends Component {
   constructor(data) {
     super();
     this._event = data.event;
-    this._icon = BigData.tripTypes[data.event].icon;
+    this._icon = tripTypes[data.event].icon;
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
@@ -16,13 +16,25 @@ class PointEdit extends Component {
     this._startTime = data.startTime;
     this._price = data.price;
     this._state.isFavorite = false;
-    this._endTime = utils.getEndTime(data.startTime);
+
     this._onSubmit = null;
-    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onEsc = null;
+
+    this._endTime = utils.getEndTime(data.startTime);
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onEscClick = this._onEscClick.bind(this);
     this._onChangeWay = this._onChangeWay.bind(this);
     // this._onChangeOffer = this._onChangeOffer.bind(this);
+  }
+
+  getTotalPrice() {
+    this._totalPrice = this._price;
+    for (const offer of this._offers) {
+      if (offer.isChecked) {
+        this._totalPrice += offer.price;
+      }
+    }
+    return this._totalPrice;
   }
 
   _processForm(formData) {
@@ -46,7 +58,7 @@ class PointEdit extends Component {
       pointEditMapper[property] && pointEditMapper[property](value);
     }
 
-    entry.icon = BigData.tripTypes[entry.event].icon;
+    entry.icon = tripTypes[entry.event].icon;
     // entry.endTime = utils.getEndTime(new Date(entry.startTime));
     return entry;
   }
@@ -59,7 +71,7 @@ class PointEdit extends Component {
 
   _onChangeWay(evt) {
     this._event = evt.target.value;
-    this._icon = BigData.tripTypes[evt.target.value].icon;
+    this._icon = tripTypes[evt.target.value].icon;
 
     this.unbind();
     this._partialUpdate();
@@ -125,24 +137,24 @@ class PointEdit extends Component {
 
             <div class="travel-way__select">
               <div class="travel-way__select-group">
-                ${BigData.moveEvents.map((event) => (`
+                ${moveEvents.map((event) => (`
                   <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
-                  <label class="travel-way__select-label" for="travel-way-${event}">${BigData.tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
+                  <label class="travel-way__select-label" for="travel-way-${event}">${tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
               </div>
 
               <div class="travel-way__select-group">
-              ${BigData.stopEvents.map((event) => (`
+              ${stopEvents.map((event) => (`
                 <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
-                <label class="travel-way__select-label" for="travel-way-${event}">${BigData.tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
+                <label class="travel-way__select-label" for="travel-way-${event}">${tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
               </div>
             </div>
           </div>
 
           <div class="point__destination-wrap">
-            <label class="point__destination-label" for="destination">${BigData.tripTypes[this._event].text}</label>
+            <label class="point__destination-label" for="destination">${tripTypes[this._event].text}</label>
             <input class="point__destination-input" list="destination-select" id="destination" value="Chamonix" name="destination">
             <datalist id="destination-select">
-              ${(BigData.destinations.map((destination) => (`
+              ${(destinations.map((destination) => (`
                 <option value="${destination}"></option>`.trim()))).join(``)}
             </datalist>
           </div>

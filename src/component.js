@@ -10,16 +10,6 @@ class Component {
     this._state = {};
   }
 
-  getTotalPrice() {
-    this._totalPrice = this._price;
-    for (const offer of this._offers) {
-      if (offer.isChecked) {
-        this._totalPrice += offer.price;
-      }
-    }
-    return this._totalPrice;
-  }
-
   get element() {
     return this._element;
   }

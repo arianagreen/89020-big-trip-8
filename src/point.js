@@ -1,23 +1,24 @@
 import Component from './component.js';
-import {BigData} from './data.js';
+import {tripTypes} from './data.js';
 import utils from './utils.js';
 
 class Point extends Component {
   constructor(data) {
     super();
     this._event = data.event;
-    // this._icon = data.icon;
-    this._icon = BigData.tripTypes[data.event].icon;
+    this._icon = tripTypes[data.event].icon;
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
     this._description = data.description;
     this._startTime = data.startTime;
     this._price = data.price;
-    this._endTime = utils.getEndTime(data.startTime);
-    this._onEdit = null;
-    this._onElementClick = this._onElementClick.bind(this);
+
     this._state.isFavorite = false;
+    this._onEdit = null;
+
+    this._endTime = utils.getEndTime(data.startTime);
+    this._onElementClick = this._onElementClick.bind(this);
   }
 
   _onElementClick() {
@@ -56,7 +57,7 @@ class Point extends Component {
 
     return `<article class="trip-point">
       <i class="trip-icon">${this._icon}</i>
-      <h3 class="trip-point__title">${BigData.tripTypes[this._event].text} ${this._destination}</h3>
+      <h3 class="trip-point__title">${tripTypes[this._event].text} ${this._destination}</h3>
       <p class="trip-point__schedule">
         <span class="trip-point__timetable">${this._startTime.toLocaleString(`en`, timeOptions)}&nbsp;&mdash; ${this._endTime.toLocaleString(`en`, timeOptions)}</span>
         <span class="trip-point__duration">${this.duration}</span>

@@ -8,22 +8,26 @@ class PointEdit extends Component {
   constructor(data) {
     super();
     this._event = data.event;
-    this._icon = tripTypes[data.event].icon;
+    this._icon = data.icon;
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
     this._description = data.description;
     this._startTime = data.startTime;
+    this._endTime = data.endTime;
     this._price = data.price;
     this._state.isFavorite = false;
+    this._state.isDeleted = false;
 
     this._onSubmit = null;
     this._onEsc = null;
+    this._onDelete = null;
 
-    this._endTime = utils.getEndTime(data.startTime);
+    // this._endTime = utils.getEndTime(data.startTime);
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onEscClick = this._onEscClick.bind(this);
     this._onChangeWay = this._onChangeWay.bind(this);
+    this._onDeleteClick = this._onDeleteClick.bind(this);
     // this._onChangeOffer = this._onChangeOffer.bind(this);
   }
 
@@ -103,6 +107,11 @@ class PointEdit extends Component {
     }
   }
 
+  _onDeleteClick(evt) {
+    evt.preventDefault();
+    typeof this._onDelete === `function` && this._onDelete();
+  }
+
   _partialUpdate() {
     this._element.innerHTML = createElement(this.template).innerHTML;
   }
@@ -113,6 +122,10 @@ class PointEdit extends Component {
 
   set onEsc(fn) {
     this._onEsc = fn;
+  }
+
+  set onDelete(fn) {
+    this._onDelete = fn;
   }
 
   get template() {
@@ -210,6 +223,9 @@ class PointEdit extends Component {
   bind() {
     this._element.querySelector(`.point__button--save`)
                 .addEventListener(`click`, this._onSubmitButtonClick);
+
+    this._element.querySelector(`.point__button[type=reset]`)
+                .addEventListener(`click`, this._onDeleteClick);
 
     const travelWaySelects = this._element.querySelectorAll(`.travel-way__select-input`);
     for (const travelWaySelect of travelWaySelects) {

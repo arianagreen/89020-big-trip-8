@@ -6,18 +6,20 @@ class Point extends Component {
   constructor(data) {
     super();
     this._event = data.event;
-    this._icon = tripTypes[data.event].icon;
+    this._icon = data.icon;
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
     this._description = data.description;
     this._startTime = data.startTime;
+    this._endTime = data.endTime;
     this._price = data.price;
 
     this._state.isFavorite = false;
+    this._state.isDeleted = false;
     this._onEdit = null;
 
-    this._endTime = utils.getEndTime(data.startTime);
+    // this._endTime = utils.getEndTime(data.startTime);
     this._onElementClick = this._onElementClick.bind(this);
   }
 

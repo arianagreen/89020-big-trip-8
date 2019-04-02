@@ -74,12 +74,15 @@ class PointEdit extends Component {
   }
 
   _onChangeWay(evt) {
-    this._event = evt.target.value;
-    this._icon = tripTypes[evt.target.value].icon;
+    // this._event = evt.target.value;
+    // this._icon = tripTypes[evt.target.value].icon;
 
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
+    this._element.querySelector(`.travel-way__label`).innerHTML = tripTypes[evt.target.value].icon;
+    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[evt.target.value].text;
+
+    // this.unbind();
+    // this._partialUpdate();
+    // this.bind();
   }
 
   // _onChangeOffer(evt) {
@@ -165,7 +168,7 @@ class PointEdit extends Component {
 
           <div class="point__destination-wrap">
             <label class="point__destination-label" for="destination">${tripTypes[this._event].text}</label>
-            <input class="point__destination-input" list="destination-select" id="destination" value="Chamonix" name="destination">
+            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination}" name="destination">
             <datalist id="destination-select">
               ${(destinations.map((destination) => (`
                 <option value="${destination}"></option>`.trim()))).join(``)}

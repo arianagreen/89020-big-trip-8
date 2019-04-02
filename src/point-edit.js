@@ -8,22 +8,26 @@ class PointEdit extends Component {
   constructor(data) {
     super();
     this._event = data.event;
-    this._icon = tripTypes[data.event].icon;
+    this._icon = data.icon;
     this._destination = data.destination;
     this._picture = data.picture;
     this._offers = data.offers;
     this._description = data.description;
     this._startTime = data.startTime;
+    this._endTime = data.endTime;
     this._price = data.price;
     this._state.isFavorite = false;
+    this._state.isDeleted = false;
 
     this._onSubmit = null;
     this._onEsc = null;
+    this._onDelete = null;
 
-    this._endTime = utils.getEndTime(data.startTime);
+    // this._endTime = utils.getEndTime(data.startTime);
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onEscClick = this._onEscClick.bind(this);
     this._onChangeWay = this._onChangeWay.bind(this);
+    this._onDeleteClick = this._onDeleteClick.bind(this);
     // this._onChangeOffer = this._onChangeOffer.bind(this);
   }
 
@@ -70,12 +74,15 @@ class PointEdit extends Component {
   }
 
   _onChangeWay(evt) {
-    this._event = evt.target.value;
-    this._icon = tripTypes[evt.target.value].icon;
+    // this._event = evt.target.value;
+    // this._icon = tripTypes[evt.target.value].icon;
 
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
+    this._element.querySelector(`.travel-way__label`).innerHTML = tripTypes[evt.target.value].icon;
+    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[evt.target.value].text;
+
+    // this.unbind();
+    // this._partialUpdate();
+    // this.bind();
   }
 
   // _onChangeOffer(evt) {
@@ -103,6 +110,11 @@ class PointEdit extends Component {
     }
   }
 
+  _onDeleteClick(evt) {
+    evt.preventDefault();
+    typeof this._onDelete === `function` && this._onDelete();
+  }
+
   _partialUpdate() {
     this._element.innerHTML = createElement(this.template).innerHTML;
   }
@@ -113,6 +125,10 @@ class PointEdit extends Component {
 
   set onEsc(fn) {
     this._onEsc = fn;
+  }
+
+  set onDelete(fn) {
+    this._onDelete = fn;
   }
 
   get template() {
@@ -152,7 +168,7 @@ class PointEdit extends Component {
 
           <div class="point__destination-wrap">
             <label class="point__destination-label" for="destination">${tripTypes[this._event].text}</label>
-            <input class="point__destination-input" list="destination-select" id="destination" value="Chamonix" name="destination">
+            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination}" name="destination">
             <datalist id="destination-select">
               ${(destinations.map((destination) => (`
                 <option value="${destination}"></option>`.trim()))).join(``)}
@@ -210,6 +226,9 @@ class PointEdit extends Component {
   bind() {
     this._element.querySelector(`.point__button--save`)
                 .addEventListener(`click`, this._onSubmitButtonClick);
+
+    this._element.querySelector(`.point__button[type=reset]`)
+                .addEventListener(`click`, this._onDeleteClick);
 
     const travelWaySelects = this._element.querySelectorAll(`.travel-way__select-input`);
     for (const travelWaySelect of travelWaySelects) {

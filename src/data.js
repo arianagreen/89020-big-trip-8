@@ -1,3 +1,4 @@
+import utils from './utils.js';
 const msPerDay = 24 * 60 * 60 * 1000;
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min; // Возвращает случайное целое число между min (включительно) и max (не включая max)
 
@@ -76,8 +77,11 @@ const events = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, 
 export default new Array(5)
 .fill()
 .map(() => {
+  const time = utils.getStartTime();
+  const eventName = events[Math.floor(Math.random() * 10)];
   return {
-    event: events[Math.floor(Math.random() * 10)],
+    event: eventName,
+    icon: tripTypes[eventName].icon,
     destination: destinations[Math.floor(Math.random() * 5)],
     picture: `http://picsum.photos/300/150?r=${Math.random()}`,
     offers: new Set(offers.sort(() => {
@@ -100,10 +104,8 @@ export default new Array(5)
       return Math.random() - 0.5;
     })
     .slice(0, Math.floor(Math.random() * 3)),
-    startTime: new Date(Date.now() + 7 * msPerDay + Math.floor(Math.random() * 7) * msPerDay),
-    get end() {
-      return new Date(Date.parse(this.startTime) + Math.random() * 2 * 60 * 60 * 1000);
-    },
+    startTime: time,
+    endTime: utils.getEndTime(time),
     price: Math.floor(Math.random() * (201 - 20)) + 20,
   };
 });

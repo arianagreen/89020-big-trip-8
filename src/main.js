@@ -1,9 +1,36 @@
+import API from './api.js';
 import Point from './point.js';
 import PointEdit from './point-edit.js';
 import Filter from './filter.js';
 import {getStats, drawCharts} from './stats.js';
 
 import initialPoints from './data.js';
+
+const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
+const END_POINT = `https://es8-demo-srv.appspot.com/big-trip/`;
+
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+
+
+const destinations = new Set();
+const offers = new Set();
+api.getDestinations()
+  .then((data) => {
+    for (const item of data) {
+      destinations.add(item);
+    }
+  });
+
+api.getOffers()
+  .then((data) => {
+    // console.log(data);
+    for (const item of data) {
+      offers.add(item);
+    }
+  });
+
+// console.log(destinations);
+
 
 const filtersData = [
   {
@@ -54,7 +81,6 @@ const renderFilters = (dist, array) => {
 
     filterComponent.onFilter = () => {
       const filteredPoints = filterPoints(initialPoints, filter.name);
-      pointsContainer.innerHTML = ``;
       renderPoints(pointsContainer, filteredPoints);
     };
   }
@@ -62,6 +88,7 @@ const renderFilters = (dist, array) => {
 };
 
 const renderPoints = (dist, array) => {
+  dist.innerHTML = ``;
   let fragment = document.createDocumentFragment();
   for (let i = 0; i < array.length; i++) {
     const point = array[i];
@@ -132,7 +159,14 @@ filterContainer.innerHTML = ``;
 pointsContainer.innerHTML = ``;
 
 renderFilters(filterContainer, filtersData);
-renderPoints(pointsContainer, initialPoints);
+// renderPoints(pointsContainer, initialPoints);
+
+api.getPoints()
+  .then((points) => {
+    renderPoints(pointsContainer, points);
+  });
 
 statsSwitchBtn.addEventListener(`click`, onStatsClick);
 tableSwitchBtn.addEventListener(`click`, onTableCLick);
+
+export {destinations, offers};

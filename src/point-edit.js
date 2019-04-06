@@ -1,40 +1,39 @@
 import Component from './component.js';
-import {destinations, moveEvents, stopEvents, tripTypes} from './data.js';
+import {moveEvents, stopEvents, tripTypes} from './data.js';
 import createElement from './create-element.js';
 import flatpickr from "flatpickr";
-import utils from './utils.js';
+import {destinations, offers} from './main.js';
+import moment from 'moment';
 
 class PointEdit extends Component {
   constructor(data) {
     super();
+    this._id = data.id;
     this._event = data.event;
-    this._icon = data.icon;
     this._destination = data.destination;
-    this._picture = data.picture;
     this._offers = data.offers;
-    this._description = data.description;
-    this._startTime = data.startTime;
-    this._endTime = data.endTime;
+    this._startTime = moment(data.startTime);
+    this._endTime = moment(data.endTime);
     this._price = data.price;
-    this._state.isFavorite = false;
+    this._state.isFavorite = data.isFavorite;
     this._state.isDeleted = false;
 
     this._onSubmit = null;
     this._onEsc = null;
     this._onDelete = null;
 
-    // this._endTime = utils.getEndTime(data.startTime);
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onEscClick = this._onEscClick.bind(this);
-    this._onChangeWay = this._onChangeWay.bind(this);
+    this._onWayChange = this._onWayChange.bind(this);
     this._onDeleteClick = this._onDeleteClick.bind(this);
-    // this._onChangeOffer = this._onChangeOffer.bind(this);
+    this._onDestinationChange = this._onDestinationChange.bind(this);
+    // this._onDateChange = this._onDateChange.bind(this);
   }
 
   getTotalPrice() {
     this._totalPrice = this._price;
     for (const offer of this._offers) {
-      if (offer.isChecked) {
+      if (offer.accepted) {
         this._totalPrice += offer.price;
       }
     }
@@ -43,13 +42,14 @@ class PointEdit extends Component {
 
   _processForm(formData) {
     for (const offer of this._offers) {
-      offer.isChecked = false;
+      offer.accepted = false;
     }
 
     const entry = {
       event: ``,
-      destination: ``,
+      destination: this._destination,
       startTime: new Date(),
+      endTime: new Date(),
       offers: this._offers,
       price: ``,
       isFavorite: false
@@ -62,37 +62,45 @@ class PointEdit extends Component {
       pointEditMapper[property] && pointEditMapper[property](value);
     }
 
-    entry.icon = tripTypes[entry.event].icon;
-    // entry.endTime = utils.getEndTime(new Date(entry.startTime));
     return entry;
   }
 
-  _onChangeDate() {}
+  // _onDateChange(evt) {
+  //   const date = moment(evt.target.value);
+  //   evt.target.value = date.format('HH:MM');
+  // }
 
   _onChangeFavorite() {
     this._state.isFavorite = !this._state.isFavorite;
   }
 
-  _onChangeWay(evt) {
-    // this._event = evt.target.value;
-    // this._icon = tripTypes[evt.target.value].icon;
+  _onWayChange(evt) {
+    this._event = evt.target.value;
+    this._icon = tripTypes[evt.target.value].icon;
+    const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
+    this._offers.clear();
 
-    this._element.querySelector(`.travel-way__label`).innerHTML = tripTypes[evt.target.value].icon;
-    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[evt.target.value].text;
+    if (newOffersData) {
+      for (const offer of newOffersData.offers) {
+        this._offers.add({
+          title: offer.name,
+          price: offer.price,
+          accepted: false
+        });
+      }
+    }
 
-    // this.unbind();
-    // this._partialUpdate();
-    // this.bind();
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
   }
 
-  // _onChangeOffer(evt) {
-  //   const priceInput = this._element.querySelector(`.point__input[name=price]`);
-  //   const price = parseInt(priceInput.value, 10);
-  //   const offerPrice = parseInt(
-  //       evt.target.nextElementSibling.querySelector(`.point__offer-price`).innerHTML,
-  //       10);
-  //   priceInput.value = evt.target.checked ? price + offerPrice : price - offerPrice;
-  // }
+  _onDestinationChange(evt) {
+    this._destination = Array.from(destinations).find((it) => it.name === evt.target.value);
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
+  }
 
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
@@ -112,7 +120,7 @@ class PointEdit extends Component {
 
   _onDeleteClick(evt) {
     evt.preventDefault();
-    typeof this._onDelete === `function` && this._onDelete();
+    typeof this._onDelete === `function` && this._onDelete({id: this._id});
   }
 
   _partialUpdate() {
@@ -132,12 +140,6 @@ class PointEdit extends Component {
   }
 
   get template() {
-    const timeOptions = {
-      hour: `numeric`,
-      minute: `numeric`,
-      hour12: false
-    };
-
     return `<article class="point">
       <form action="" method="get">
         <header class="point__header">
@@ -147,7 +149,7 @@ class PointEdit extends Component {
           </label>
 
           <div class="travel-way">
-            <label class="travel-way__label" for="travel-way__toggle">${this._icon}</label>
+            <label class="travel-way__label" for="travel-way__toggle">${tripTypes[this._event].icon}</label>
 
             <input type="checkbox" class="travel-way__toggle visually-hidden" id="travel-way__toggle">
 
@@ -168,17 +170,18 @@ class PointEdit extends Component {
 
           <div class="point__destination-wrap">
             <label class="point__destination-label" for="destination">${tripTypes[this._event].text}</label>
-            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination}" name="destination">
+            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination.name}" name="destination">
             <datalist id="destination-select">
-              ${(destinations.map((destination) => (`
-                <option value="${destination}"></option>`.trim()))).join(``)}
+              ${(Array.from(destinations).map((destination) => (`
+                <option value="${destination.name}"></option>`.trim()))).join(``)}
             </datalist>
           </div>
 
-          <label class="point__time">
+          <div class="point__time">
             choose time
-            <input class="point__input" type="text" value="${this._startTime.toLocaleString(`en`, timeOptions)} — ${this._endTime.toLocaleString(`en`, timeOptions)}" name="time" placeholder="00:00 — 00:00">
-          </label>
+            <input class="point__input" type="text" value="${this._startTime.format('HH:MM')}" name="date-start" placeholder="19:00">
+            <input class="point__input" type="text" value="${this._endTime.format('HH:MM')}" name="date-end" placeholder="21:00">
+          </div>
 
           <label class="point__price">
             write price
@@ -202,19 +205,20 @@ class PointEdit extends Component {
             <h3 class="point__details-title">offers</h3>
 
             <div class="point__offers-wrap">
-              ${(Array.from(this._offers).map((offer) => (`
-                <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" ${offer.isChecked ? `checked` : ``}>
+              ${this._offers ? (Array.from(this._offers).map((offer) => (`
+                <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" ${offer.accepted ? `checked` : ``}>
                 <label for="${offer.title.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
                   <span class="point__offer-service">${offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
-                </label>`.trim()))).join(``)}
+                </label>`.trim()))).join(``) : ``}
             </div>
 
           </section>
           <section class="point__destination">
             <h3 class="point__details-title">Destination</h3>
-            <p class="point__destination-text">${this._description}</p>
+            <p class="point__destination-text">${this._destination.description}</p>
             <div class="point__destination-images">
-              <img src="${this._picture}" alt="picture from place" class="point__destination-image">
+              ${this._destination.pictures ? this._destination.pictures.map((picture) => (`
+                  <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}
             </div>
           </section>
           <input type="hidden" class="point__total-price" name="total-price" value="">
@@ -232,24 +236,36 @@ class PointEdit extends Component {
 
     const travelWaySelects = this._element.querySelectorAll(`.travel-way__select-input`);
     for (const travelWaySelect of travelWaySelects) {
-      travelWaySelect.addEventListener(`click`, this._onChangeWay);
+      travelWaySelect.addEventListener(`click`, this._onWayChange);
     }
+
+    this._element.querySelector(`.point__destination-input`)
+                .addEventListener(`change`, this._onDestinationChange);
+
 
     window.addEventListener(`keydown`, this._onEscClick);
 
-    const timeInput = this._element.querySelector(`.point__time .point__input`);
+    const timeStart = this._element.querySelector(`.point__time .point__input[name='date-start']`);
+    const timeEnd = this._element.querySelector(`.point__time .point__input[name='date-end']`);
+    // timeStart.addEventListener(`change`, this._onDateChange);
+    // timeEnd.addEventListener(`change`, this._onDateChange);
 
-    flatpickr(timeInput, {
+
+    flatpickr(timeStart, {
       enableTime: true,
-      noCalendar: true,
+      // noCalendar: true,
       time_24hr: true,
-      dateFormat: "H:i"
+      // dateFormat: "H:i"
+      dateFormat: "Y-m-d H:i"
     });
 
-    // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
-    // for (const offerSelect of offerSelects) {
-    //   offerSelect.addEventListener(`change`, this._onChangeOffer);
-    // }
+    flatpickr(timeEnd, {
+      enableTime: true,
+      // noCalendar: true,
+      time_24hr: true,
+      // dateFormat: "H:i"
+      dateFormat: "Y-m-d H:i"
+    });
   }
 
   unbind() {
@@ -258,25 +274,29 @@ class PointEdit extends Component {
 
     const travelWaySelects = this._element.querySelectorAll(`.travel-way__select-input`);
     for (const travelWaySelect of travelWaySelects) {
-      travelWaySelect.removeEventListener(`click`, this._onChangeWay);
+      travelWaySelect.removeEventListener(`click`, this._onWayChange);
     }
 
     window.removeEventListener(`keydown`, this._onEscClick);
-
-    // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
-    // for (const offerSelect of offerSelects) {
-    //   offerSelect.removeEventListener(`change`, this._onChangeOffer);
-    // }
   }
 
   update(data) {
     this._event = data.event;
     this._destination = data.destination;
-    this._icon = data.icon;
     this._offers = data.offers;
-    // this._startTime = data.startTime;
+    this._startTime = data.startTime;
+    this._endTime = data.endTime;
     this._price = data.price;
     this._state.isFavorite = data.isFavorite;
+  }
+
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.classList.add(`shake`);
+
+    setTimeout(() => {
+      this._element.classList.remove(`shake`);
+    }, ANIMATION_TIMEOUT);
   }
 
   static createMapper(target) {
@@ -285,18 +305,20 @@ class PointEdit extends Component {
         target.event = value;
       },
       'destination': (value) => {
-        target.destination = value;
+        target.destination.name = value;
       },
-      // 'time': (value) =>
       'offer': (value) => {
         for (const offer of target.offers) {
           if (value === offer.title.replace(/\s+/g, `-`).toLowerCase()) {
-            offer.isChecked = true;
+            offer.accepted = true;
           }
         }
       },
-      'time': (value) => {
+      'date-start': (value) => {
         target.startTime = value;
+      },
+      'date-end': (value) => {
+        target.endTime = value;
       },
       'price': (value) => {
         target.price = value;

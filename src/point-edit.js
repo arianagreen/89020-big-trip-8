@@ -2,21 +2,18 @@ import Component from './component.js';
 import {moveEvents, stopEvents, tripTypes} from './data.js';
 import createElement from './create-element.js';
 import flatpickr from "flatpickr";
-import utils from './utils.js';
 import {destinations, offers} from './main.js';
+import moment from 'moment';
 
 class PointEdit extends Component {
   constructor(data) {
     super();
     this._id = data.id;
     this._event = data.event;
-    // this._icon = data.icon;
     this._destination = data.destination;
-    // this._picture = data.picture;
     this._offers = data.offers;
-    // this._description = data.description;
-    this._startTime = data.startTime;
-    this._endTime = data.endTime;
+    this._startTime = moment(data.startTime);
+    this._endTime = moment(data.endTime);
     this._price = data.price;
     this._state.isFavorite = data.isFavorite;
     this._state.isDeleted = false;
@@ -25,13 +22,12 @@ class PointEdit extends Component {
     this._onEsc = null;
     this._onDelete = null;
 
-    // this._endTime = utils.getEndTime(data.startTime);
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onEscClick = this._onEscClick.bind(this);
     this._onWayChange = this._onWayChange.bind(this);
     this._onDeleteClick = this._onDeleteClick.bind(this);
     this._onDestinationChange = this._onDestinationChange.bind(this);
-    // this._onChangeOffer = this._onChangeOffer.bind(this);
+    // this._onDateChange = this._onDateChange.bind(this);
   }
 
   getTotalPrice() {
@@ -66,12 +62,13 @@ class PointEdit extends Component {
       pointEditMapper[property] && pointEditMapper[property](value);
     }
 
-    // entry.icon = tripTypes[entry.event].icon;
-    // entry.endTime = utils.getEndTime(new Date(entry.startTime));
     return entry;
   }
 
-  _onChangeDate() {}
+  // _onDateChange(evt) {
+  //   const date = moment(evt.target.value);
+  //   evt.target.value = date.format('HH:MM');
+  // }
 
   _onChangeFavorite() {
     this._state.isFavorite = !this._state.isFavorite;
@@ -105,15 +102,6 @@ class PointEdit extends Component {
     this.bind();
   }
 
-  // _onChangeOffer(evt) {
-  //   const priceInput = this._element.querySelector(`.point__input[name=price]`);
-  //   const price = parseInt(priceInput.value, 10);
-  //   const offerPrice = parseInt(
-  //       evt.target.nextElementSibling.querySelector(`.point__offer-price`).innerHTML,
-  //       10);
-  //   priceInput.value = evt.target.checked ? price + offerPrice : price - offerPrice;
-  // }
-
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
 
@@ -132,7 +120,7 @@ class PointEdit extends Component {
 
   _onDeleteClick(evt) {
     evt.preventDefault();
-    typeof this._onDelete === `function` && this._onDelete();
+    typeof this._onDelete === `function` && this._onDelete({id: this._id});
   }
 
   _partialUpdate() {
@@ -152,12 +140,6 @@ class PointEdit extends Component {
   }
 
   get template() {
-    const timeOptions = {
-      hour: `numeric`,
-      minute: `numeric`,
-      hour12: false
-    };
-
     return `<article class="point">
       <form action="" method="get">
         <header class="point__header">
@@ -195,11 +177,11 @@ class PointEdit extends Component {
             </datalist>
           </div>
 
-          <label class="point__time">
+          <div class="point__time">
             choose time
-            <input class="point__input" type="text" value="${this._startTime.toLocaleString(`en`, timeOptions)}" name="date-start" placeholder="19:00">
-            <input class="point__input" type="text" value="${this._endTime.toLocaleString(`en`, timeOptions)}" name="date-end" placeholder="21:00">
-          </label>
+            <input class="point__input" type="text" value="${this._startTime.format('HH:MM')}" name="date-start" placeholder="19:00">
+            <input class="point__input" type="text" value="${this._endTime.format('HH:MM')}" name="date-end" placeholder="21:00">
+          </div>
 
           <label class="point__price">
             write price
@@ -265,25 +247,25 @@ class PointEdit extends Component {
 
     const timeStart = this._element.querySelector(`.point__time .point__input[name='date-start']`);
     const timeEnd = this._element.querySelector(`.point__time .point__input[name='date-end']`);
+    // timeStart.addEventListener(`change`, this._onDateChange);
+    // timeEnd.addEventListener(`change`, this._onDateChange);
+
 
     flatpickr(timeStart, {
       enableTime: true,
-      noCalendar: true,
+      // noCalendar: true,
       time_24hr: true,
-      dateFormat: "H:i"
+      // dateFormat: "H:i"
+      dateFormat: "Y-m-d H:i"
     });
 
     flatpickr(timeEnd, {
       enableTime: true,
-      noCalendar: true,
+      // noCalendar: true,
       time_24hr: true,
-      dateFormat: "H:i"
+      // dateFormat: "H:i"
+      dateFormat: "Y-m-d H:i"
     });
-
-    // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
-    // for (const offerSelect of offerSelects) {
-    //   offerSelect.addEventListener(`change`, this._onChangeOffer);
-    // }
   }
 
   unbind() {
@@ -296,22 +278,25 @@ class PointEdit extends Component {
     }
 
     window.removeEventListener(`keydown`, this._onEscClick);
-
-    // const offerSelects = this._element.querySelectorAll(`.point__offers-input`);
-    // for (const offerSelect of offerSelects) {
-    //   offerSelect.removeEventListener(`change`, this._onChangeOffer);
-    // }
   }
 
   update(data) {
     this._event = data.event;
     this._destination = data.destination;
-    // this._icon = data.icon;
     this._offers = data.offers;
     this._startTime = data.startTime;
     this._endTime = data.endTime;
     this._price = data.price;
     this._state.isFavorite = data.isFavorite;
+  }
+
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.classList.add(`shake`);
+
+    setTimeout(() => {
+      this._element.classList.remove(`shake`);
+    }, ANIMATION_TIMEOUT);
   }
 
   static createMapper(target) {

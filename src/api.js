@@ -1,5 +1,4 @@
 import ModelPoint from './model-point.js';
-import ModelDestination from './model-destination.js';
 
 const Method = {
   GET: `GET`,
@@ -43,7 +42,7 @@ const API = class {
       .then(ModelPoint.parseTask);
   }
 
-  updatePoit({id, data}) {
+  updatePoint({id, data}) {
     return this._load({
       url: `points/${id}`,
       method: Method.PUT,

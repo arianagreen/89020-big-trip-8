@@ -19,17 +19,7 @@ class Component {
   }
 
   render() {
-    // const potentialElement = createElement(this.template);
-    // if (potentialElement.firstChild.nodeName === `INPUT`) {
-    //   this._element = document.createDocumentFragment();
-    //   for (const child of potentialElement.childNodes) {
-    //     this._element.appendChild(child);
-    //   }
-    // } else {
-    //   this._element = potentialElement;
-    // }
     this._element = createElement(this.template);
-
     this.bind();
     return this._element;
   }

@@ -21,7 +21,9 @@ class Point extends Component {
   }
 
   _onElementClick() {
-    typeof this._onEdit === `function` && this._onEdit();
+    if (typeof this._onEdit === `function`) {
+      this._onEdit();
+    }
   }
 
   set onEdit(fn) {
@@ -30,7 +32,7 @@ class Point extends Component {
 
   get duration() {
     const diff = moment(this._startTime.diff(this._endTime));
-    const diffArr = diff.format('H m').split(` `);
+    const diffArr = diff.format(`H m`).split(` `);
 
     if (diffArr[0] === `0`) {
       return `${diffArr[1]}M`;
@@ -46,7 +48,7 @@ class Point extends Component {
       <i class="trip-icon">${tripTypes[this._event].icon}</i>
       <h3 class="trip-point__title">${tripTypes[this._event].text} ${this._destination.name}</h3>
       <p class="trip-point__schedule">
-        <span class="trip-point__timetable">${this._startTime.format('HH:MM')}&nbsp;&mdash; ${this._endTime.format('HH:MM')}</span>
+        <span class="trip-point__timetable">${this._startTime.format(`HH:MM`)}&nbsp;&mdash; ${this._endTime.format(`HH:MM`)}</span>
         <span class="trip-point__duration">${this.duration}</span>
       </p>
       <p class="trip-point__price">&euro;&nbsp;${this._price}</p>

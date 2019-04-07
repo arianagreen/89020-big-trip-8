@@ -80,8 +80,8 @@ const drawCharts = (statsObj) => {
             size: 13
           },
           color: `#000000`,
-          anchor: 'end',
-          align: 'start',
+          anchor: `end`,
+          align: `start`,
           formatter: (val) => `€ ${val}`
         }
       },
@@ -145,8 +145,8 @@ const drawCharts = (statsObj) => {
             size: 13
           },
           color: `#000000`,
-          anchor: 'end',
-          align: 'start',
+          anchor: `end`,
+          align: `start`,
           formatter: (val) => `${val}x`
         }
       },

@@ -4,8 +4,6 @@ import PointEdit from './point-edit.js';
 import Filter from './filter.js';
 import {getStats, drawCharts} from './stats.js';
 
-import initialPoints from './data.js';
-
 const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/big-trip/`;
 
@@ -43,6 +41,18 @@ const filtersData = [
   }
 ];
 
+const filterActions = {
+  'everything': (points) => {
+    return points;
+  },
+  'future': (points) => {
+    return points.filter((it) => it.startTime > Date.now());
+  },
+  'past': (points) => {
+    return points.filter((it) => it.endTime < Date.now());
+  }
+};
+
 const filterContainer = document.querySelector(`.trip-filter`);
 const pointsContainer = document.querySelector(`.trip-day__items`);
 const tableSwitchBtn = document.querySelector(`.view-switch__item[href='#table']`);
@@ -51,14 +61,7 @@ const tripPointsSection = document.querySelector(`.trip-points`);
 const statisticsSection = document.querySelector(`.statistic`);
 
 const filterPoints = (points, filter) => {
-  switch (filter) {
-    case `everything`:
-      return points;
-    case `future`:
-      return points.filter((it) => it.startTime > Date.now());
-    case `past`:
-      return points.filter((it) => it.endTime < Date.now());
-  }
+  return filterActions[filter](points);
 };
 
 const disableForm = (form) => {
@@ -88,15 +91,19 @@ const setTotalPrice = (points) => {
   document.querySelector(`.trip__total-cost`).textContent = totalCost;
 };
 
-const renderFilters = (dist, array) => {
+const renderFilters = (dist, filters) => {
   let fragment = document.createDocumentFragment();
-  for (const filter of array) {
+  for (const filter of filters) {
     const filterComponent = new Filter(filter);
     fragment.appendChild(filterComponent.render());
 
     filterComponent.onFilter = () => {
-      const filteredPoints = filterPoints(initialPoints, filter.name);
-      renderPoints(pointsContainer, filteredPoints);
+      api.getPoints()
+        .then((points) => {
+          const filteredPoints = filterPoints(points, filter.name);
+          renderPoints(pointsContainer, filteredPoints);
+        })
+        .catch(onError);
     };
   }
   dist.appendChild(fragment);
@@ -150,8 +157,7 @@ const renderPoints = (dist, points) => {
 
             setTotalPrice(points);
           })
-          .catch((err) => {
-            console.log(err);
+          .catch(() => {
             editPointComponent.shake();
             unblock();
           });
@@ -194,16 +200,20 @@ const renderPoints = (dist, points) => {
 
 const onStatsClick = (evt) => {
   evt.preventDefault();
-  const stats = getStats(initialPoints);
-  drawCharts(stats);
-  statisticsSection.classList.remove(`visually-hidden`);
-  tableSwitchBtn.classList.remove(`view-switch__item--active`);
-  if (!tripPointsSection.classList.contains(`visually-hidden`)) {
-    tripPointsSection.classList.add(`visually-hidden`);
-  }
-  if (!statsSwitchBtn.classList.contains(`view-switch__item--active`)) {
-    statsSwitchBtn.classList.add(`view-switch__item--active`);
-  }
+  api.getPoints()
+    .then((points) => {
+      const stats = getStats(points);
+      drawCharts(stats);
+      statisticsSection.classList.remove(`visually-hidden`);
+      tableSwitchBtn.classList.remove(`view-switch__item--active`);
+      if (!tripPointsSection.classList.contains(`visually-hidden`)) {
+        tripPointsSection.classList.add(`visually-hidden`);
+      }
+      if (!statsSwitchBtn.classList.contains(`view-switch__item--active`)) {
+        statsSwitchBtn.classList.add(`view-switch__item--active`);
+      }
+    })
+    .catch(onError);
 };
 
 const onTableCLick = (evt) => {
@@ -218,8 +228,7 @@ const onTableCLick = (evt) => {
   }
 };
 
-const onError = (err) => {
-  console.log(err);
+const onError = () => {
   pointsContainer.innerHTML = `Something went wrong while loading your route info. Check your connection or try again later`;
 };
 

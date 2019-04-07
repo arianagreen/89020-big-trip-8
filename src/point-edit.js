@@ -59,7 +59,9 @@ class PointEdit extends Component {
 
     for (const pair of formData.entries()) {
       const [property, value] = pair;
-      pointEditMapper[property] && pointEditMapper[property](value);
+      if (pointEditMapper[property]) {
+        pointEditMapper[property](value);
+      }
     }
 
     return entry;
@@ -107,20 +109,25 @@ class PointEdit extends Component {
 
     const formData = new FormData(this._element.querySelector(`form`));
     const newData = this._processForm(formData);
-    typeof this._onSubmit === `function` && this._onSubmit(newData);
-
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
     this.update(newData);
   }
 
   _onEscClick(evt) {
     if (evt.keyCode === 27) {
-      typeof this._onEsc === `function` && this._onEsc();
+      if (typeof this._onEsc === `function`) {
+        this._onEsc();
+      }
     }
   }
 
   _onDeleteClick(evt) {
     evt.preventDefault();
-    typeof this._onDelete === `function` && this._onDelete({id: this._id});
+    if (typeof this._onDelete === `function`) {
+      this._onDelete({id: this._id});
+    }
   }
 
   _partialUpdate() {
@@ -179,8 +186,8 @@ class PointEdit extends Component {
 
           <div class="point__time">
             choose time
-            <input class="point__input" type="text" value="${this._startTime.format('HH:MM')}" name="date-start" placeholder="19:00">
-            <input class="point__input" type="text" value="${this._endTime.format('HH:MM')}" name="date-end" placeholder="21:00">
+            <input class="point__input" type="text" value="${this._startTime.format(`HH:MM`)}" name="date-start" placeholder="19:00">
+            <input class="point__input" type="text" value="${this._endTime.format(`HH:MM`)}" name="date-end" placeholder="21:00">
           </div>
 
           <label class="point__price">
@@ -252,19 +259,19 @@ class PointEdit extends Component {
 
 
     flatpickr(timeStart, {
-      enableTime: true,
+      'enableTime': true,
       // noCalendar: true,
-      time_24hr: true,
+      'time_24hr': true,
       // dateFormat: "H:i"
-      dateFormat: "Y-m-d H:i"
+      'dateFormat': `Y-m-d H:i`
     });
 
     flatpickr(timeEnd, {
-      enableTime: true,
+      'enableTime': true,
       // noCalendar: true,
-      time_24hr: true,
+      'time_24hr': true,
       // dateFormat: "H:i"
-      dateFormat: "Y-m-d H:i"
+      'dateFormat': `Y-m-d H:i`
     });
   }
 

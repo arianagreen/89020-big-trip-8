@@ -1,6 +1,4 @@
 import utils from './utils.js';
-import API from './api.js';
-const msPerDay = 24 * 60 * 60 * 1000;
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min; // Возвращает случайное целое число между min (включительно) и max (не включая max)
 
 const tripTypes = {

@@ -17,7 +17,9 @@ class Filter extends Component {
   }
 
   _onFilterClick(evt) {
-    typeof this._onFilter === `function` && this._onFilter(evt);
+    if (typeof this._onFilter === `function`) {
+      this._onFilter(evt);
+    }
   }
 
   get template() {

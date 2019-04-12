@@ -47,10 +47,10 @@ class PointEdit extends Component {
 
     const entry = {
       event: ``,
-      destination: this._destination,
+      destination: {},
       startTime: new Date(),
       endTime: new Date(),
-      offers: this._offers,
+      offers: new Set(),
       price: ``,
       isFavorite: false
     };
@@ -72,36 +72,39 @@ class PointEdit extends Component {
   //   evt.target.value = date.format('HH:MM');
   // }
 
-  _onChangeFavorite() {
-    this._state.isFavorite = !this._state.isFavorite;
-  }
-
   _onWayChange(evt) {
-    this._event = evt.target.value;
-    this._icon = tripTypes[evt.target.value].icon;
+    const newEvent = evt.target.value;
+    const newIcon = tripTypes[newEvent].icon;
     const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
-    this._offers.clear();
+    const offersContainer = this._element.querySelector(`.point__offers-wrap`);
+    // this._offers.clear();
+    this._element.querySelector(`.travel-way__label`).innerHTML = newIcon;
+    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[newEvent].text;
 
-    if (newOffersData) {
-      for (const offer of newOffersData.offers) {
-        this._offers.add({
-          title: offer.name,
-          price: offer.price,
-          accepted: false
-        });
-      }
-    }
-
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
+    offersContainer.innerHTML = `${newOffersData ? (newOffersData.offers.map((offer) => (`
+      <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.name.replace(/\s+/g, `-`).toLowerCase()}"}>
+      <label for="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
+        <span class="point__offer-service">${offer.name}</span> + €<span class="point__offer-price">${offer.price}</span>
+      </label>`.trim()))).join(``) : ``}`;
+    // if (newOffersData) {
+    // for (const offer of newOffersData.offers) {
+    //   this._offers.add({
+    //     title: offer.name,
+    //     price: offer.price,
+    //     accepted: false
+    //   });
+    // }
+    //
+    // this.unbind();
+    // this._partialUpdate();
+    // this.bind();
   }
 
   _onDestinationChange(evt) {
-    this._destination = Array.from(destinations).find((it) => it.name === evt.target.value);
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
+    const newDestination = Array.from(destinations).find((it) => it.name === evt.target.value);
+    this._element.querySelector(`.point__destination-text`).innerText = newDestination.description;
+    this._element.querySelector(`.point__destination-images`).innerHTML = `${newDestination.pictures ? newDestination.pictures.map((picture) => (`
+        <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}`;
   }
 
   _onSubmitButtonClick(evt) {
@@ -291,8 +294,8 @@ class PointEdit extends Component {
     this._event = data.event;
     this._destination = data.destination;
     this._offers = data.offers;
-    this._startTime = data.startTime;
-    this._endTime = data.endTime;
+    this._startTime = moment(data.startTime);
+    this._endTime = moment(data.endTime);
     this._price = data.price;
     this._state.isFavorite = data.isFavorite;
   }
@@ -310,9 +313,17 @@ class PointEdit extends Component {
     return {
       'travel-way': (value) => {
         target.event = value;
+        const newOffers = Array.from(offers).find((it) => it.type === value).offers;
+        for (const offer of newOffers) {
+          target.offers.add({
+            title: offer.name,
+            price: offer.price,
+            accepted: false
+          });
+        }
       },
       'destination': (value) => {
-        target.destination.name = value;
+        target.destination = Array.from(destinations).find((dest) => (dest.name === value));
       },
       'offer': (value) => {
         for (const offer of target.offers) {

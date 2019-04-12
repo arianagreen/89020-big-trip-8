@@ -2,7 +2,9 @@ import API from './api.js';
 import Point from './point.js';
 import PointEdit from './point-edit.js';
 import Filter from './filter.js';
+import Sort from './sort.js';
 import {getStats, drawCharts} from './stats.js';
+import moment from 'moment';
 
 const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/big-trip/`;
@@ -53,7 +55,46 @@ const filterActions = {
   }
 };
 
+const sortingData = [
+  {
+    name: `event`,
+    isChecked: true
+  },
+  {
+    name: `time`,
+    isChecked: false
+  },
+  {
+    name: `price`,
+    isChecked: false
+  }
+];
+
+const sortingActions = {
+  'event': (points) => {
+    return points;
+  },
+  'time': (points) => {
+    const sortedPoints = points;
+    sortedPoints.sort((a, b) => {
+      const startA = moment(a.startTime);
+      const endA = moment(a.endTime);
+      const startB = moment(b.startTime);
+      const endB = moment(b.endTime);
+      return moment(startB.diff(endB)) - moment(startA.diff(endA));
+    });
+
+    return sortedPoints;
+  },
+  'price': (points) => {
+    const sortedPoints = points;
+    sortedPoints.sort((a, b) => b.price - a.price);
+    return sortedPoints;
+  }
+};
+
 const filterContainer = document.querySelector(`.trip-filter`);
+const sortingContainer = document.querySelector(`.trip-sorting`);
 const pointsContainer = document.querySelector(`.trip-day__items`);
 const tableSwitchBtn = document.querySelector(`.view-switch__item[href='#table']`);
 const statsSwitchBtn = document.querySelector(`.view-switch__item[href='#stats']`);
@@ -62,6 +103,10 @@ const statisticsSection = document.querySelector(`.statistic`);
 
 const filterPoints = (points, filter) => {
   return filterActions[filter](points);
+};
+
+const sortPoints = (points, sort) => {
+  return sortingActions[sort](points);
 };
 
 const disableForm = (form) => {
@@ -102,6 +147,25 @@ const renderFilters = (dist, filters) => {
         .then((points) => {
           const filteredPoints = filterPoints(points, filter.name);
           renderPoints(pointsContainer, filteredPoints);
+        })
+        .catch(onError);
+    };
+  }
+  dist.appendChild(fragment);
+};
+
+const renderSorting = (dist, sortings) => {
+  dist.innerHTML = ``;
+  let fragment = document.createDocumentFragment();
+  for (const sort of sortings) {
+    const sortingComponent = new Sort(sort);
+    fragment.appendChild(sortingComponent.render());
+
+    sortingComponent.onSort = () => {
+      api.getPoints()
+        .then((points) => {
+          const sortedPoints = sortPoints(points, sort.name);
+          renderPoints(pointsContainer, sortedPoints);
         })
         .catch(onError);
     };
@@ -228,7 +292,8 @@ const onTableCLick = (evt) => {
   }
 };
 
-const onError = () => {
+const onError = (err) => {
+  console.log(err);
   pointsContainer.innerHTML = `Something went wrong while loading your route info. Check your connection or try again later`;
 };
 
@@ -236,6 +301,7 @@ filterContainer.innerHTML = ``;
 pointsContainer.innerHTML = `Loading route...`;
 
 renderFilters(filterContainer, filtersData);
+renderSorting(sortingContainer, sortingData);
 
 api.getPoints()
   .then((points) => {

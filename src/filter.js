@@ -29,11 +29,12 @@ class Filter extends Component {
 
   bind() {
     this._element.querySelector(`.trip-filter__item`)
-      .addEventListener(`click`, this._onFilterClick);
+                  .addEventListener(`click`, this._onFilterClick);
   }
 
   unbind() {
-    this._element.removeEventListener(`click`, this._onFilterClick);
+    this._element.querySelector(`.trip-filter__item`)
+                  .removeEventListener(`click`, this._onFilterClick);
   }
 }
 

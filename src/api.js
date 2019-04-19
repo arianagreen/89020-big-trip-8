@@ -10,9 +10,9 @@ const Method = {
 const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
     return response;
-  } else {
-    throw new Error(`${response.status}: ${response.statusText}`);
   }
+
+  throw new Error(`${response.status}: ${response.statusText}`);
 };
 
 const toJSON = (response) => {
@@ -39,7 +39,7 @@ const API = class {
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)
-      .then(ModelPoint.parseTask);
+      .then(ModelPoint.parsePoint);
   }
 
   updatePoint({id, data}) {

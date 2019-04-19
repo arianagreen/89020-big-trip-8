@@ -5,17 +5,17 @@ import flatpickr from "flatpickr";
 import {destinations, offers} from './main.js';
 import moment from 'moment';
 
-class PointEdit extends Component {
-  constructor(data) {
+class NewPoint extends Component {
+  constructor() {
     super();
-    this._id = data.id;
-    this._event = data.event;
-    this._destination = data.destination;
-    this._offers = data.offers;
-    this._startTime = moment(data.startTime);
-    this._endTime = moment(data.endTime);
-    this._price = data.price;
-    this._state.isFavorite = data.isFavorite;
+    this._id = String(Date.now());
+    this._event = ``;
+    this._destination = {};
+    this._offers = new Set();
+    this._startTime = ``;
+    this._endTime = ``;
+    this._price = ``;
+    this._state.isFavorite = false;
     this._state.isDeleted = false;
 
     this._onSubmit = null;
@@ -27,35 +27,25 @@ class PointEdit extends Component {
     this._onWayChange = this._onWayChange.bind(this);
     this._onDeleteClick = this._onDeleteClick.bind(this);
     this._onDestinationChange = this._onDestinationChange.bind(this);
-    // this._onDateChange = this._onDateChange.bind(this);
-  }
-
-  getTotalPrice() {
-    this._totalPrice = this._price;
-    for (const offer of this._offers) {
-      if (offer.accepted) {
-        this._totalPrice += offer.price;
-      }
-    }
-    return this._totalPrice;
   }
 
   _processForm(formData) {
-    for (const offer of this._offers) {
-      offer.accepted = false;
-    }
+    // for (const offer of this._offers) {
+    //   offer.accepted = false;
+    // }
 
     const entry = {
       event: ``,
       destination: {},
-      startTime: new Date(),
-      endTime: new Date(),
+      day: ``,
+      startTime: ``,
+      endTime: ``,
       offers: new Set(),
       price: ``,
       isFavorite: false
     };
 
-    const pointEditMapper = PointEdit.createMapper(entry);
+    const pointEditMapper = NewPoint.createMapper(entry);
 
     for (const pair of formData.entries()) {
       const [property, value] = pair;
@@ -64,13 +54,13 @@ class PointEdit extends Component {
       }
     }
 
+    entry.id = String(Date.now());
+    entry.startTime = new Date(`${entry.day} ${entry.startTime}`);
+    entry.endTime = new Date(`${entry.day} ${entry.endTime}`);
+    delete entry.day;
+
     return entry;
   }
-
-  // _onDateChange(evt) {
-  //   const date = moment(evt.target.value);
-  //   evt.target.value = date.format('HH:MM');
-  // }
 
   _onWayChange(evt) {
     const newEvent = evt.target.value;
@@ -86,13 +76,21 @@ class PointEdit extends Component {
       <label for="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
         <span class="point__offer-service">${offer.name}</span> + €<span class="point__offer-price">${offer.price}</span>
       </label>`.trim()))).join(``) : ``}`;
+    // if (this._offers) {
+    //   this._offers.clear();
+    // }
+    // this._event = evt.target.value;
+    //
+    // const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
+    //
     // if (newOffersData) {
-    // for (const offer of newOffersData.offers) {
-    //   this._offers.add({
-    //     title: offer.name,
-    //     price: offer.price,
-    //     accepted: false
-    //   });
+    //   for (const offer of newOffersData.offers) {
+    //     this._offers.add({
+    //       title: offer.name,
+    //       price: offer.price,
+    //       accepted: false
+    //     });
+    //   }
     // }
     //
     // this.unbind();
@@ -105,6 +103,11 @@ class PointEdit extends Component {
     this._element.querySelector(`.point__destination-text`).innerText = newDestination.description;
     this._element.querySelector(`.point__destination-images`).innerHTML = `${newDestination.pictures ? newDestination.pictures.map((picture) => (`
         <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}`;
+    // this._destination = Array.from(destinations).find((it) => it.name === evt.target.value);
+    //
+    // this.unbind();
+    // this._partialUpdate();
+    // this.bind();
   }
 
   _onSubmitButtonClick(evt) {
@@ -115,7 +118,7 @@ class PointEdit extends Component {
     if (typeof this._onSubmit === `function`) {
       this._onSubmit(newData);
     }
-    this.update(newData);
+    // this.update(newData);
   }
 
   _onEscClick(evt) {
@@ -155,18 +158,18 @@ class PointEdit extends Component {
         <header class="point__header">
           <label class="point__date">
             choose day
-            <input class="point__input" type="text" placeholder="${this._startTime.toLocaleString(`en`, {month: `short`, day: `numeric`})}" name="day">
+            <input class="point__input" type="text" placeholder="${this._startTime.toLocaleString(`en`, {month: `short`, day: `numeric`})}" name="day" required>
           </label>
 
           <div class="travel-way">
-            <label class="travel-way__label" for="travel-way__toggle">${tripTypes[this._event].icon}</label>
+            <label class="travel-way__label" for="travel-way__toggle">${this._event.length > 0 ? tripTypes[this._event].icon : ``}</label>
 
             <input type="checkbox" class="travel-way__toggle visually-hidden" id="travel-way__toggle">
 
             <div class="travel-way__select">
               <div class="travel-way__select-group">
                 ${moveEvents.map((event) => (`
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``} required>
                   <label class="travel-way__select-label" for="travel-way-${event}">${tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
               </div>
 
@@ -179,8 +182,8 @@ class PointEdit extends Component {
           </div>
 
           <div class="point__destination-wrap">
-            <label class="point__destination-label" for="destination">${tripTypes[this._event].text}</label>
-            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination.name}" name="destination">
+            <label class="point__destination-label" for="destination">${this._event ? tripTypes[this._event].text : ``}</label>
+            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination.name ? this._destination.name : ``}" name="destination" required>
             <datalist id="destination-select">
               ${(Array.from(destinations).map((destination) => (`
                 <option value="${destination.name}"></option>`.trim()))).join(``)}
@@ -189,14 +192,14 @@ class PointEdit extends Component {
 
           <div class="point__time">
             choose time
-            <input class="point__input" type="text" value="${this._startTime.format(`HH:mm`)}" name="date-start" placeholder="19:00">
-            <input class="point__input" type="text" value="${this._endTime.format(`HH:mm`)}" name="date-end" placeholder="21:00">
+            <input class="point__input" type="text" value="" name="date-start" placeholder="19:00" required>
+            <input class="point__input" type="text" value="" name="date-end" placeholder="21:00" required>
           </div>
 
           <label class="point__price">
             write price
             <span class="point__price-currency">€</span>
-            <input class="point__input" type="text" value="${this._price}" name="price">
+            <input class="point__input" type="text" value="${this._price}" name="price" required>
           </label>
 
           <div class="point__buttons">
@@ -225,7 +228,7 @@ class PointEdit extends Component {
           </section>
           <section class="point__destination">
             <h3 class="point__details-title">Destination</h3>
-            <p class="point__destination-text">${this._destination.description}</p>
+            <p class="point__destination-text">${this._destination.description ? this._destination.description : ``}</p>
             <div class="point__destination-images">
               ${this._destination.pictures ? this._destination.pictures.map((picture) => (`
                   <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}
@@ -241,7 +244,7 @@ class PointEdit extends Component {
     this._element.querySelector(`.point__button--save`)
                 .addEventListener(`click`, this._onSubmitButtonClick);
 
-    this._element.querySelector(`.point__button[type=reset]`)
+    this._element.querySelector(`.point__button[type='reset']`)
                 .addEventListener(`click`, this._onDeleteClick);
 
     const travelWaySelects = this._element.querySelectorAll(`.travel-way__select-input`);
@@ -255,11 +258,17 @@ class PointEdit extends Component {
 
     window.addEventListener(`keydown`, this._onEscClick);
 
-    const timeStart = this._element.querySelector(`.point__time .point__input[name='date-start']`);
-    const timeEnd = this._element.querySelector(`.point__time .point__input[name='date-end']`);
+    const dayInput = this._element.querySelector(`.point__input[name='day']`);
+    const timeStart = this._element.querySelector(`.point__input[name='date-start']`);
+    const timeEnd = this._element.querySelector(`.point__input[name='date-end']`);
     // timeStart.addEventListener(`change`, this._onDateChange);
     // timeEnd.addEventListener(`change`, this._onDateChange);
 
+    flatpickr(dayInput, {
+      altInput: true,
+      altFormat: `j F Y`,
+      dateFormat: `Y-m-d`
+    });
 
     flatpickr(timeStart, {
       'altInput': true,
@@ -267,7 +276,7 @@ class PointEdit extends Component {
       'enableTime': true,
       'time_24hr': true,
       'dateFormat': `Y-m-d H:i`,
-      'defaultDate': moment(this._startTime).format(`YYYY-MM-DD HH:mm`)
+      'defaultDate': moment(Date.now()).format(`YYYY-MM-DD HH:mm`)
     });
 
     flatpickr(timeEnd, {
@@ -276,7 +285,7 @@ class PointEdit extends Component {
       'enableTime': true,
       'time_24hr': true,
       'dateFormat': `Y-m-d H:i`,
-      'defaultDate': moment(this._startTime).format(`YYYY-MM-DD HH:mm`)
+      'defaultDate': moment(Date.now()).format(`YYYY-MM-DD HH:mm`)
     });
   }
 
@@ -300,6 +309,19 @@ class PointEdit extends Component {
     this._endTime = moment(data.endTime);
     this._price = data.price;
     this._state.isFavorite = data.isFavorite;
+  }
+
+  toRaw(newData) {
+    return {
+      'id': newData.id,
+      'type': newData.event,
+      'destination': newData.destination,
+      'date_from': newData.startTime,
+      'date_to': newData.endTime,
+      'base_price': newData.price,
+      'offers': [...newData.offers.values()],
+      'is_favorite': newData.isFavorite
+    };
   }
 
   shake() {
@@ -334,6 +356,9 @@ class PointEdit extends Component {
           }
         }
       },
+      'day': (value) => {
+        target.day = value;
+      },
       'date-start': (value) => {
         target.startTime = value;
       },
@@ -348,6 +373,20 @@ class PointEdit extends Component {
       }
     };
   }
+
+  static toRaw(newData) {
+    return {
+      'id': newData.id,
+      'type': newData.event,
+      'destination': newData.destination,
+      'date_from': newData.startTime,
+      'date_to': newData.endTime,
+      'base_price': newData.price,
+      'offers': [...newData.offers.values()],
+      'is_favorite': newData.isFavorite
+    };
+  }
+
 }
 
-export default PointEdit;
+export default NewPoint;

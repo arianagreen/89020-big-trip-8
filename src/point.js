@@ -31,16 +31,11 @@ class Point extends Component {
   }
 
   get duration() {
-    const diff = moment(this._startTime.diff(this._endTime));
-    const diffArr = diff.format(`H m`).split(` `);
+    const diffD = this._endTime.diff(this._startTime, `days`);
+    const diffH = this._endTime.diff(this._startTime, `hours`) - (diffD * 24);
+    const diffM = this._endTime.diff(this._startTime, `minutes`) - (diffD * 24) - (diffH * 60);
 
-    if (diffArr[0] === `0`) {
-      return `${diffArr[1]}M`;
-    } else if (diffArr[1] === `0`) {
-      return `${diffArr[0]}H`;
-    } else {
-      return `${diffArr[0]}H ${diffArr[1]}M`;
-    }
+    return `${diffD ? `${diffD}D ` : ``}${diffH ? `${diffH}H ` : ``}${diffM ? `${diffM}M` : ``}`;
   }
 
   get template() {
@@ -48,7 +43,7 @@ class Point extends Component {
       <i class="trip-icon">${tripTypes[this._event].icon}</i>
       <h3 class="trip-point__title">${tripTypes[this._event].text} ${this._destination.name}</h3>
       <p class="trip-point__schedule">
-        <span class="trip-point__timetable">${this._startTime.format(`HH:MM`)}&nbsp;&mdash; ${this._endTime.format(`HH:MM`)}</span>
+        <span class="trip-point__timetable">${this._startTime.format(`HH:mm`)}&nbsp;&mdash; ${this._endTime.format(`HH:mm`)}</span>
         <span class="trip-point__duration">${this.duration}</span>
       </p>
       <p class="trip-point__price">&euro;&nbsp;${this._price}</p>

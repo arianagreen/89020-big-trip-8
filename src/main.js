@@ -104,7 +104,6 @@ const sortingActions = {
 
 const filterContainer = document.querySelector(`.trip-filter`);
 const sortingContainer = document.querySelector(`.trip-sorting`);
-// const pointsContainer = document.querySelector(`.trip-day__items`);
 const tableSwitchBtn = document.querySelector(`.view-switch__item[href='#table']`);
 const statsSwitchBtn = document.querySelector(`.view-switch__item[href='#stats']`);
 const tripPointsContainer = document.querySelector(`.trip-points`);
@@ -178,20 +177,20 @@ const renderSorting = (dist, sortings) => {
   dist.appendChild(fragment);
 };
 
-//// TEST /////
+// TEST //
 
 const renderDay = (day) => {
   const dayComponent = new TripDay(day);
   dayComponent.render();
   return dayComponent.element;
-  // const pointsContainer = dayElement.querySelector(`.trip-day__items`);
 };
 
 const renderPoint = (dist, point) => {
   const pointComponent = new Point(point);
   const editPointComponent = new PointEdit(point);
 
-  dist.appendChild(pointComponent.render());
+  pointComponent.render();
+  dist.appendChild(pointComponent.element);
 
   pointComponent.onEdit = () => {
     editPointComponent.render();
@@ -230,6 +229,11 @@ const renderPoint = (dist, point) => {
           dist.replaceChild(pointComponent.element, editPointComponent.element);
           editPointComponent.update(newPoint);
           editPointComponent.unrender();
+          api.getPoints()
+            .then((points) => {
+              renderTotal(points);
+            })
+            .catch(onError);
         })
         .catch(() => {
           editPointComponent.shake();
@@ -267,8 +271,6 @@ const renderPoint = (dist, point) => {
         });
     };
   };
-
-  return pointComponent.render();
 };
 
 const renderPoints = (points) => {
@@ -357,20 +359,21 @@ const renderNewPoint = () => {
 
     block();
 
-    api.createPoint(newData)
+    api.createPoint(NewPoint.toRaw(newData))
       .then(() => {
         unblock();
-        api.getPoints()
-          .then((points) => {
-            renderPoints(actualize(points));
-          })
-          .catch(onError);
         newPointComponent.unrender();
       })
       .catch(() => {
         newPointComponent.shake();
         unblock();
       });
+
+    api.getPoints()
+      .then((points) => {
+        renderPoints(actualize(points));
+      })
+      .catch(onError);
   };
 
   newPointComponent.onEsc = () => {

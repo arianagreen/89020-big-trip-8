@@ -30,16 +30,12 @@ class NewPoint extends Component {
   }
 
   _processForm(formData) {
-    // for (const offer of this._offers) {
-    //   offer.accepted = false;
-    // }
-
     const entry = {
       event: ``,
       destination: {},
       day: ``,
-      startTime: ``,
-      endTime: ``,
+      startTime: new Date(),
+      endTime: new Date(),
       offers: new Set(),
       price: ``,
       isFavorite: false
@@ -55,59 +51,42 @@ class NewPoint extends Component {
     }
 
     entry.id = String(Date.now());
-    entry.startTime = new Date(`${entry.day} ${entry.startTime}`);
-    entry.endTime = new Date(`${entry.day} ${entry.endTime}`);
     delete entry.day;
 
     return entry;
   }
 
   _onWayChange(evt) {
-    const newEvent = evt.target.value;
-    const newIcon = tripTypes[newEvent].icon;
-    const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
-    const offersContainer = this._element.querySelector(`.point__offers-wrap`);
-    // this._offers.clear();
-    this._element.querySelector(`.travel-way__label`).innerHTML = newIcon;
-    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[newEvent].text;
+    this._event = evt.target.value;
 
-    offersContainer.innerHTML = `${newOffersData ? (newOffersData.offers.map((offer) => (`
-      <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.name.replace(/\s+/g, `-`).toLowerCase()}"}>
-      <label for="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
-        <span class="point__offer-service">${offer.name}</span> + €<span class="point__offer-price">${offer.price}</span>
-      </label>`.trim()))).join(``) : ``}`;
-    // if (this._offers) {
-    //   this._offers.clear();
-    // }
-    // this._event = evt.target.value;
-    //
-    // const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
-    //
-    // if (newOffersData) {
-    //   for (const offer of newOffersData.offers) {
-    //     this._offers.add({
-    //       title: offer.name,
-    //       price: offer.price,
-    //       accepted: false
-    //     });
-    //   }
-    // }
-    //
-    // this.unbind();
-    // this._partialUpdate();
-    // this.bind();
+    if (this._offers) {
+      this._offers.clear();
+    }
+    this._event = evt.target.value;
+
+    const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
+
+    if (newOffersData) {
+      for (const offer of newOffersData.offers) {
+        this._offers.add({
+          title: offer.name,
+          price: offer.price,
+          accepted: false
+        });
+      }
+    }
+
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
   }
 
   _onDestinationChange(evt) {
-    const newDestination = Array.from(destinations).find((it) => it.name === evt.target.value);
-    this._element.querySelector(`.point__destination-text`).innerText = newDestination.description;
-    this._element.querySelector(`.point__destination-images`).innerHTML = `${newDestination.pictures ? newDestination.pictures.map((picture) => (`
-        <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}`;
-    // this._destination = Array.from(destinations).find((it) => it.name === evt.target.value);
-    //
-    // this.unbind();
-    // this._partialUpdate();
-    // this.bind();
+    this._destination = Array.from(destinations).find((it) => it.name === evt.target.value);
+
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
   }
 
   _onSubmitButtonClick(evt) {
@@ -118,7 +97,6 @@ class NewPoint extends Component {
     if (typeof this._onSubmit === `function`) {
       this._onSubmit(newData);
     }
-    // this.update(newData);
   }
 
   _onEscClick(evt) {
@@ -301,29 +279,6 @@ class NewPoint extends Component {
     window.removeEventListener(`keydown`, this._onEscClick);
   }
 
-  update(data) {
-    this._event = data.event;
-    this._destination = data.destination;
-    this._offers = data.offers;
-    this._startTime = moment(data.startTime);
-    this._endTime = moment(data.endTime);
-    this._price = data.price;
-    this._state.isFavorite = data.isFavorite;
-  }
-
-  toRaw(newData) {
-    return {
-      'id': newData.id,
-      'type': newData.event,
-      'destination': newData.destination,
-      'date_from': newData.startTime,
-      'date_to': newData.endTime,
-      'base_price': newData.price,
-      'offers': [...newData.offers.values()],
-      'is_favorite': newData.isFavorite
-    };
-  }
-
   shake() {
     const ANIMATION_TIMEOUT = 600;
     this._element.classList.add(`shake`);
@@ -337,13 +292,15 @@ class NewPoint extends Component {
     return {
       'travel-way': (value) => {
         target.event = value;
-        const newOffers = Array.from(offers).find((it) => it.type === value).offers;
-        for (const offer of newOffers) {
-          target.offers.add({
-            title: offer.name,
-            price: offer.price,
-            accepted: false
-          });
+        if (Array.from(offers).find((it) => it.type === value)) {
+          const newOffers = Array.from(offers).find((it) => it.type === value).offers;
+          for (const offer of newOffers) {
+            target.offers.add({
+              title: offer.name,
+              price: offer.price,
+              accepted: false
+            });
+          }
         }
       },
       'destination': (value) => {
@@ -360,10 +317,10 @@ class NewPoint extends Component {
         target.day = value;
       },
       'date-start': (value) => {
-        target.startTime = value;
+        target.startTime = new Date(value);
       },
       'date-end': (value) => {
-        target.endTime = value;
+        target.endTime = new Date(value);
       },
       'price': (value) => {
         target.price = value;
@@ -386,7 +343,6 @@ class NewPoint extends Component {
       'is_favorite': newData.isFavorite
     };
   }
-
 }
 
 export default NewPoint;

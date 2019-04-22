@@ -334,8 +334,7 @@ const onTableCLick = (evt) => {
     .catch(onError);
 };
 
-const onError = (err) => {
-  console.log(err);
+const onError = () => {
   tripPointsContainer.innerHTML = `Something went wrong while loading your route info. Check your connection or try again later`;
 };
 

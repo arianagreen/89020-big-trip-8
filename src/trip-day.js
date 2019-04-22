@@ -1,5 +1,4 @@
 import Component from './component.js';
-import utils from './utils.js';
 import moment from 'moment';
 
 class TripDay extends Component {

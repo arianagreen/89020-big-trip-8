@@ -25,9 +25,9 @@ const getStats = (data) => {
     const duration = end.diff(start, `hours`);
 
     if (tripEventsAndPrices[point.event]) {
-      tripEventsAndPrices[point.event] += point.price;
+      tripEventsAndPrices[point.event] += parseInt(point.price, 10);
     } else {
-      tripEventsAndPrices[point.event] = point.price;
+      tripEventsAndPrices[point.event] = parseInt(point.price, 10);
     }
 
     if (moveEvents.find((it) => it === point.event)) {

@@ -239,7 +239,7 @@ class PointEdit extends Component {
       'enableTime': true,
       'time_24hr': true,
       'dateFormat': `Y-m-d H:i`,
-      'defaultDate': moment(this._startTime).format(`YYYY-MM-DD HH:mm`)
+      'defaultDate': moment(this._endTime).format(`YYYY-MM-DD HH:mm`)
     });
   }
 
@@ -301,10 +301,10 @@ class PointEdit extends Component {
         }
       },
       'date-start': (value) => {
-        target.startTime = value;
+        target.startTime = new Date(value);
       },
       'date-end': (value) => {
-        target.endTime = value;
+        target.endTime = new Date(value);
       },
       'price': (value) => {
         target.price = value;

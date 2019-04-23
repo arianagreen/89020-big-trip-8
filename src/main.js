@@ -14,28 +14,14 @@ const END_POINT = `https://es8-demo-srv.appspot.com/big-trip/`;
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
-const destinations = new Set();
-const offers = new Set();
-
 const app = {
   view: `table`, // table, stats
   filter: `everything`, // everything, future, past
   sorting: `event` // event, time, price
 };
 
-api.getDestinations()
-  .then((data) => {
-    for (const item of data) {
-      destinations.add(item);
-    }
-  });
-
-api.getOffers()
-  .then((data) => {
-    for (const item of data) {
-      offers.add(item);
-    }
-  });
+const destinations = new Set();
+const offers = new Set();
 
 const filtersData = [
   {
@@ -193,13 +179,7 @@ const renderPoint = (dist, point) => {
     const form = editPointComponent.element.querySelector(`form`);
 
     editPointComponent.onSubmit = (newData) => {
-      point.event = newData.event;
-      point.destination = newData.destination;
-      point.offers = newData.offers;
-      point.startTime = newData.startTime;
-      point.endTime = newData.endTime;
-      point.price = newData.price;
-      point.isFavorite = newData.isFavorite;
+      point.update(newData);
 
       const block = () => {
         disableForm(form);
@@ -333,7 +313,8 @@ const onError = () => {
 
 const renderNewPoint = () => {
   const newPointComponent = new NewPoint();
-  tripPointsContainer.insertAdjacentElement(`afterbegin`, newPointComponent.render());
+  newPointComponent.render();
+  tripPointsContainer.insertAdjacentElement(`afterbegin`, newPointComponent.element);
   const form = newPointComponent.element.querySelector(`form`);
   const submitButton = newPointComponent.element.querySelector(`.point__button--save`);
 
@@ -364,6 +345,7 @@ const renderNewPoint = () => {
     api.getPoints()
       .then((points) => {
         renderPoints(actualize(points));
+        newPointsButton.addEventListener(`click`, onNewPointClick);
       })
       .catch(onError);
   };
@@ -389,9 +371,12 @@ const renderTotal = (points) => {
 
 const onNewPointClick = () => {
   renderNewPoint();
+  newPointsButton.removeEventListener(`click`, onNewPointClick);
 };
 
 newPointsButton.addEventListener(`click`, onNewPointClick);
+statsSwitchBtn.addEventListener(`click`, onStatsClick);
+tableSwitchBtn.addEventListener(`click`, onTableCLick);
 
 filterContainer.innerHTML = ``;
 tripPointsContainer.innerHTML = `Loading route...`;
@@ -399,13 +384,24 @@ tripPointsContainer.innerHTML = `Loading route...`;
 renderFilters(filterContainer, filtersData);
 renderSorting(sortingContainer, sortingData);
 
+api.getDestinations()
+  .then((data) => {
+    for (const item of data) {
+      destinations.add(item);
+    }
+  });
+
+api.getOffers()
+  .then((data) => {
+    for (const item of data) {
+      offers.add(item);
+    }
+  });
+
 api.getPoints()
   .then((points) => {
     renderPoints(actualize(points));
   })
   .catch(onError);
-
-statsSwitchBtn.addEventListener(`click`, onStatsClick);
-tableSwitchBtn.addEventListener(`click`, onTableCLick);
 
 export {destinations, offers};

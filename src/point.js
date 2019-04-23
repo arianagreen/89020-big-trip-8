@@ -33,7 +33,12 @@ class Point extends Component {
   get duration() {
     const diffD = this._endTime.diff(this._startTime, `days`);
     const diffH = this._endTime.diff(this._startTime, `hours`) - (diffD * 24);
-    const diffM = this._endTime.diff(this._startTime, `minutes`) - (diffD * 24) - (diffH * 60);
+    let diffM = 0;
+    if (diffH) {
+      diffM = this._endTime.diff(this._startTime, `minutes`) - (diffD * 24) - (diffH * 60);
+    } else {
+      diffM = this._endTime.diff(this._startTime, `minutes`) - (diffD * 24 * 60);
+    }
 
     return `${diffD ? `${diffD}D ` : ``}${diffH ? `${diffH}H ` : ``}${diffM ? `${diffM}M` : ``}`;
   }

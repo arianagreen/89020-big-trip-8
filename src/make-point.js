@@ -1,5 +1,3 @@
-// const offerTemplate = `<li><button class="trip-point__offer">${offer} ${currency}&nbsp;${price}</button></li>`;
-
 const getDuration = (start, end) => {
   const diff = end - start;
   const diffMin = Math.round(diff / (60 * 1000));

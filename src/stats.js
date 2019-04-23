@@ -80,9 +80,9 @@ const drawCharts = (statsObj) => {
 
   // Рассчитаем высоту канваса в зависимости от того, сколько данных в него будет передаваться
   const BAR_HEIGHT = 55;
-  moneyCtx.height = BAR_HEIGHT * 6;
-  transportCtx.height = BAR_HEIGHT * 4;
-  timeSpendCtx.height = BAR_HEIGHT * 4;
+  moneyCtx.height = BAR_HEIGHT * statsObj.moneyLabels.length;
+  transportCtx.height = BAR_HEIGHT * statsObj.transportLabels.length;
+  timeSpendCtx.height = BAR_HEIGHT * statsObj.timeLabels.length;
 
   const moneyChart = new Chart(moneyCtx, {
     plugins: [ChartDataLabels],

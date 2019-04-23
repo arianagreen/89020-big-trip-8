@@ -9,7 +9,7 @@ import TripCost from './trip-cost.js';
 import {getStats, drawCharts} from './stats.js';
 import moment from 'moment';
 
-const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
+const AUTHORIZATION = `Basic eo0w590ik29889e=`; // ${Math.random()}
 const END_POINT = `https://es8-demo-srv.appspot.com/big-trip/`;
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
@@ -81,24 +81,19 @@ const sortingData = [
 
 const sortingActions = {
   'event': (points) => {
-    return points;
+    return points.sort((a, b) => moment(a.startTime).valueOf() - moment(b.startTime).valueOf());
   },
   'time': (points) => {
-    const sortedPoints = points;
-    sortedPoints.sort((a, b) => {
+    return points.sort((a, b) => {
       const startA = moment(a.startTime);
       const endA = moment(a.endTime);
       const startB = moment(b.startTime);
       const endB = moment(b.endTime);
       return endB.diff(startB) - endA.diff(startA);
     });
-
-    return sortedPoints;
   },
   'price': (points) => {
-    const sortedPoints = points;
-    sortedPoints.sort((a, b) => b.price - a.price);
-    return sortedPoints;
+    return points.sort((a, b) => b.price - a.price);
   }
 };
 
@@ -176,8 +171,6 @@ const renderSorting = (dist, sortings) => {
   }
   dist.appendChild(fragment);
 };
-
-// TEST //
 
 const renderDay = (day) => {
   const dayComponent = new TripDay(day);
@@ -277,8 +270,8 @@ const renderPoints = (points) => {
   renderTotal(points);
   const fragment = document.createDocumentFragment();
 
-  for (let i = 0; i < points.length; i++) {
-    const point = points[i];
+  for (const point of points) {
+    const i = points.indexOf(point);
     const day = moment(point.startTime).startOf(`day`);
 
     if (i === 0 || day.valueOf() !== moment(points[i - 1].startTime).startOf(`day`).valueOf()) {
@@ -408,7 +401,7 @@ renderSorting(sortingContainer, sortingData);
 
 api.getPoints()
   .then((points) => {
-    renderPoints(points);
+    renderPoints(actualize(points));
   })
   .catch(onError);
 

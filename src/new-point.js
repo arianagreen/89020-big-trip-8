@@ -1,6 +1,5 @@
 import Component from './component.js';
 import {moveEvents, stopEvents, tripTypes} from './data.js';
-import createElement from './create-element.js';
 import flatpickr from "flatpickr";
 import {destinations, offers} from './main.js';
 import moment from 'moment';
@@ -29,95 +28,6 @@ class NewPoint extends Component {
     this._onDestinationChange = this._onDestinationChange.bind(this);
   }
 
-  _processForm(formData) {
-    const entry = {
-      event: ``,
-      destination: {},
-      day: ``,
-      startTime: new Date(),
-      endTime: new Date(),
-      offers: new Set(),
-      price: ``,
-      isFavorite: false
-    };
-
-    const pointEditMapper = NewPoint.createMapper(entry);
-
-    for (const pair of formData.entries()) {
-      const [property, value] = pair;
-      if (pointEditMapper[property]) {
-        pointEditMapper[property](value);
-      }
-    }
-
-    entry.id = String(Date.now());
-    delete entry.day;
-
-    return entry;
-  }
-
-  _onWayChange(evt) {
-    this._event = evt.target.value;
-
-    if (this._offers) {
-      this._offers.clear();
-    }
-    this._event = evt.target.value;
-
-    const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
-
-    if (newOffersData) {
-      for (const offer of newOffersData.offers) {
-        this._offers.add({
-          title: offer.name,
-          price: offer.price,
-          accepted: false
-        });
-      }
-    }
-
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
-  }
-
-  _onDestinationChange(evt) {
-    this._destination = Array.from(destinations).find((it) => it.name === evt.target.value);
-
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
-  }
-
-  _onSubmitButtonClick(evt) {
-    evt.preventDefault();
-
-    const formData = new FormData(this._element.querySelector(`form`));
-    const newData = this._processForm(formData);
-    if (typeof this._onSubmit === `function`) {
-      this._onSubmit(newData);
-    }
-  }
-
-  _onEscClick(evt) {
-    if (evt.keyCode === 27) {
-      if (typeof this._onEsc === `function`) {
-        this._onEsc();
-      }
-    }
-  }
-
-  _onDeleteClick(evt) {
-    evt.preventDefault();
-    if (typeof this._onDelete === `function`) {
-      this._onDelete({id: this._id});
-    }
-  }
-
-  _partialUpdate() {
-    this._element.innerHTML = createElement(this.template).innerHTML;
-  }
-
   set onSubmit(fn) {
     this._onSubmit = fn;
   }
@@ -136,7 +46,7 @@ class NewPoint extends Component {
         <header class="point__header">
           <label class="point__date">
             choose day
-            <input class="point__input" type="text" placeholder="${this._startTime.toLocaleString(`en`, {month: `short`, day: `numeric`})}" name="day" required>
+            <input class="point__input" type="text" placeholder="${this._startTime.toLocaleString(`en`, {month: `short`, day: `numeric`})}" name="day">
           </label>
 
           <div class="travel-way">
@@ -147,7 +57,7 @@ class NewPoint extends Component {
             <div class="travel-way__select">
               <div class="travel-way__select-group">
                 ${moveEvents.map((event) => (`
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``} required>
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-${event}" name="travel-way" value="${event}" ${this._event === event ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-${event}">${tripTypes[event].icon} ${event}</label>`.trim())).join(``)}
               </div>
 
@@ -218,6 +128,100 @@ class NewPoint extends Component {
     </article>`;
   }
 
+  _processForm(formData) {
+    const entry = {
+      event: ``,
+      destination: {},
+      day: ``,
+      startTime: new Date(),
+      endTime: new Date(),
+      offers: new Set(),
+      price: ``,
+      isFavorite: false
+    };
+
+    const pointEditMapper = NewPoint.createMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (pointEditMapper[property]) {
+        pointEditMapper[property](value);
+      }
+    }
+
+    entry.id = String(Date.now());
+    delete entry.day;
+
+    return entry;
+  }
+
+  _onWayChange(evt) {
+    const newEvent = evt.target.value;
+    const newIcon = tripTypes[newEvent].icon;
+    const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
+    const offersContainer = this._element.querySelector(`.point__offers-wrap`);
+    this._element.querySelector(`.travel-way__label`).innerHTML = newIcon;
+    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[newEvent].text;
+    this._element.querySelector(`.travel-way__toggle`).checked = false;
+
+    offersContainer.innerHTML = `${newOffersData ? (newOffersData.offers.map((offer) => (`
+      <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.name.replace(/\s+/g, `-`).toLowerCase()}"}>
+      <label for="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
+        <span class="point__offer-service">${offer.name}</span> + €<span class="point__offer-price">${offer.price}</span>
+      </label>`.trim()))).join(``) : ``}`;
+  }
+
+  _onDestinationChange(evt) {
+    const newDestination = Array.from(destinations).find((it) => it.name === evt.target.value);
+    this._element.querySelector(`.point__destination-text`).innerText = newDestination.description;
+    this._element.querySelector(`.point__destination-images`).innerHTML = `${newDestination.pictures ? newDestination.pictures.map((picture) => (`
+        <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}`;
+  }
+
+  _onSubmitButtonClick(evt) {
+    evt.preventDefault();
+
+    const form = this._element.querySelector(`form`);
+    const requiredInputs = Array.from(this._element.querySelectorAll(`input[required]`));
+
+    for (const input of requiredInputs) {
+      if (input.validity.valueMissing) {
+        input.setCustomValidity(`You have to define ${input.name}`);
+      } else {
+        input.setCustomValidity(``);
+      }
+    }
+
+    if (form.querySelector(`.travel-way__label`).innerHTML.length === 0) {
+      form.querySelector(`.travel-way__toggle`).setCustomValidity(`You have to choose trip type`);
+    } else {
+      form.querySelector(`.travel-way__toggle`).setCustomValidity(``);
+    }
+
+    if (form.reportValidity() && form.querySelector(`.travel-way__label`).innerHTML.length > 0) {
+      const formData = new FormData(this._element.querySelector(`form`));
+      const newData = this._processForm(formData);
+      if (typeof this._onSubmit === `function`) {
+        this._onSubmit(newData);
+      }
+    }
+  }
+
+  _onEscClick(evt) {
+    if (evt.keyCode === 27) {
+      if (typeof this._onEsc === `function`) {
+        this._onEsc();
+      }
+    }
+  }
+
+  _onDeleteClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onDelete === `function`) {
+      this._onDelete({id: this._id});
+    }
+  }
+
   bind() {
     this._element.querySelector(`.point__button--save`)
                 .addEventListener(`click`, this._onSubmitButtonClick);
@@ -233,14 +237,11 @@ class NewPoint extends Component {
     this._element.querySelector(`.point__destination-input`)
                 .addEventListener(`change`, this._onDestinationChange);
 
-
     window.addEventListener(`keydown`, this._onEscClick);
 
     const dayInput = this._element.querySelector(`.point__input[name='day']`);
     const timeStart = this._element.querySelector(`.point__input[name='date-start']`);
     const timeEnd = this._element.querySelector(`.point__input[name='date-end']`);
-    // timeStart.addEventListener(`change`, this._onDateChange);
-    // timeEnd.addEventListener(`change`, this._onDateChange);
 
     flatpickr(dayInput, {
       altInput: true,
@@ -275,6 +276,9 @@ class NewPoint extends Component {
     for (const travelWaySelect of travelWaySelects) {
       travelWaySelect.removeEventListener(`click`, this._onWayChange);
     }
+
+    this._element.querySelector(`.point__destination-input`)
+                .removeEventListener(`change`, this._onDestinationChange);
 
     window.removeEventListener(`keydown`, this._onEscClick);
   }

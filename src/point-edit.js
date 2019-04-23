@@ -1,6 +1,5 @@
 import Component from './component.js';
 import {moveEvents, stopEvents, tripTypes} from './data.js';
-import createElement from './create-element.js';
 import flatpickr from "flatpickr";
 import {destinations, offers} from './main.js';
 import moment from 'moment';
@@ -27,114 +26,6 @@ class PointEdit extends Component {
     this._onWayChange = this._onWayChange.bind(this);
     this._onDeleteClick = this._onDeleteClick.bind(this);
     this._onDestinationChange = this._onDestinationChange.bind(this);
-    // this._onDateChange = this._onDateChange.bind(this);
-  }
-
-  getTotalPrice() {
-    this._totalPrice = this._price;
-    for (const offer of this._offers) {
-      if (offer.accepted) {
-        this._totalPrice += offer.price;
-      }
-    }
-    return this._totalPrice;
-  }
-
-  _processForm(formData) {
-    for (const offer of this._offers) {
-      offer.accepted = false;
-    }
-
-    const entry = {
-      event: ``,
-      destination: {},
-      startTime: new Date(),
-      endTime: new Date(),
-      offers: new Set(),
-      price: ``,
-      isFavorite: false
-    };
-
-    const pointEditMapper = PointEdit.createMapper(entry);
-
-    for (const pair of formData.entries()) {
-      const [property, value] = pair;
-      if (pointEditMapper[property]) {
-        pointEditMapper[property](value);
-      }
-    }
-
-    return entry;
-  }
-
-  // _onDateChange(evt) {
-  //   const date = moment(evt.target.value);
-  //   evt.target.value = date.format('HH:MM');
-  // }
-
-  _onWayChange(evt) {
-    const newEvent = evt.target.value;
-    const newIcon = tripTypes[newEvent].icon;
-    const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
-    const offersContainer = this._element.querySelector(`.point__offers-wrap`);
-    // this._offers.clear();
-    this._element.querySelector(`.travel-way__label`).innerHTML = newIcon;
-    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[newEvent].text;
-
-    offersContainer.innerHTML = `${newOffersData ? (newOffersData.offers.map((offer) => (`
-      <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.name.replace(/\s+/g, `-`).toLowerCase()}"}>
-      <label for="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
-        <span class="point__offer-service">${offer.name}</span> + €<span class="point__offer-price">${offer.price}</span>
-      </label>`.trim()))).join(``) : ``}`;
-    // if (newOffersData) {
-    // for (const offer of newOffersData.offers) {
-    //   this._offers.add({
-    //     title: offer.name,
-    //     price: offer.price,
-    //     accepted: false
-    //   });
-    // }
-    //
-    // this.unbind();
-    // this._partialUpdate();
-    // this.bind();
-  }
-
-  _onDestinationChange(evt) {
-    const newDestination = Array.from(destinations).find((it) => it.name === evt.target.value);
-    this._element.querySelector(`.point__destination-text`).innerText = newDestination.description;
-    this._element.querySelector(`.point__destination-images`).innerHTML = `${newDestination.pictures ? newDestination.pictures.map((picture) => (`
-        <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}`;
-  }
-
-  _onSubmitButtonClick(evt) {
-    evt.preventDefault();
-
-    const formData = new FormData(this._element.querySelector(`form`));
-    const newData = this._processForm(formData);
-    if (typeof this._onSubmit === `function`) {
-      this._onSubmit(newData);
-    }
-    this.update(newData);
-  }
-
-  _onEscClick(evt) {
-    if (evt.keyCode === 27) {
-      if (typeof this._onEsc === `function`) {
-        this._onEsc();
-      }
-    }
-  }
-
-  _onDeleteClick(evt) {
-    evt.preventDefault();
-    if (typeof this._onDelete === `function`) {
-      this._onDelete({id: this._id});
-    }
-  }
-
-  _partialUpdate() {
-    this._element.innerHTML = createElement(this.template).innerHTML;
   }
 
   set onSubmit(fn) {
@@ -237,6 +128,82 @@ class PointEdit extends Component {
     </article>`;
   }
 
+  _processForm(formData) {
+    for (const offer of this._offers) {
+      offer.accepted = false;
+    }
+
+    const entry = {
+      event: ``,
+      destination: {},
+      startTime: new Date(),
+      endTime: new Date(),
+      offers: new Set(),
+      price: ``,
+      isFavorite: false
+    };
+
+    const pointEditMapper = PointEdit.createMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (pointEditMapper[property]) {
+        pointEditMapper[property](value);
+      }
+    }
+
+    return entry;
+  }
+
+  _onWayChange(evt) {
+    const newEvent = evt.target.value;
+    const newIcon = tripTypes[newEvent].icon;
+    const newOffersData = Array.from(offers).find((it) => it.type === evt.target.value);
+    const offersContainer = this._element.querySelector(`.point__offers-wrap`);
+    this._element.querySelector(`.travel-way__label`).innerHTML = newIcon;
+    this._element.querySelector(`.point__destination-label`).innerHTML = tripTypes[newEvent].text;
+    this._element.querySelector(`.travel-way__toggle`).checked = false;
+
+    offersContainer.innerHTML = `${newOffersData ? (newOffersData.offers.map((offer) => (`
+      <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" name="offer" value="${offer.name.replace(/\s+/g, `-`).toLowerCase()}"}>
+      <label for="${offer.name.replace(/\s+/g, `-`).toLowerCase()}" class="point__offers-label">
+        <span class="point__offer-service">${offer.name}</span> + €<span class="point__offer-price">${offer.price}</span>
+      </label>`.trim()))).join(``) : ``}`;
+  }
+
+  _onDestinationChange(evt) {
+    const newDestination = Array.from(destinations).find((it) => it.name === evt.target.value);
+    this._element.querySelector(`.point__destination-text`).innerText = newDestination.description;
+    this._element.querySelector(`.point__destination-images`).innerHTML = `${newDestination.pictures ? newDestination.pictures.map((picture) => (`
+        <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}`;
+  }
+
+  _onSubmitButtonClick(evt) {
+    evt.preventDefault();
+
+    const formData = new FormData(this._element.querySelector(`form`));
+    const newData = this._processForm(formData);
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+    this.update(newData);
+  }
+
+  _onEscClick(evt) {
+    if (evt.keyCode === 27) {
+      if (typeof this._onEsc === `function`) {
+        this._onEsc();
+      }
+    }
+  }
+
+  _onDeleteClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onDelete === `function`) {
+      this._onDelete({id: this._id});
+    }
+  }
+
   bind() {
     this._element.querySelector(`.point__button--save`)
                 .addEventListener(`click`, this._onSubmitButtonClick);
@@ -252,14 +219,10 @@ class PointEdit extends Component {
     this._element.querySelector(`.point__destination-input`)
                 .addEventListener(`change`, this._onDestinationChange);
 
-
     window.addEventListener(`keydown`, this._onEscClick);
 
-    const timeStart = this._element.querySelector(`.point__time .point__input[name='date-start']`);
-    const timeEnd = this._element.querySelector(`.point__time .point__input[name='date-end']`);
-    // timeStart.addEventListener(`change`, this._onDateChange);
-    // timeEnd.addEventListener(`change`, this._onDateChange);
-
+    const timeStart = this._element.querySelector(`.point__input[name='date-start']`);
+    const timeEnd = this._element.querySelector(`.point__input[name='date-end']`);
 
     flatpickr(timeStart, {
       'altInput': true,
@@ -288,6 +251,9 @@ class PointEdit extends Component {
     for (const travelWaySelect of travelWaySelects) {
       travelWaySelect.removeEventListener(`click`, this._onWayChange);
     }
+
+    this._element.querySelector(`.point__destination-input`)
+                .removeEventListener(`change`, this._onDestinationChange);
 
     window.removeEventListener(`keydown`, this._onEscClick);
   }

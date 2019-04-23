@@ -111,7 +111,6 @@ export default new Array(5)
         .slice(1, Math.floor(Math.random() * 1)),
       })
       )},
-    // picture: `http://picsum.photos/300/150?r=${Math.random()}`,
     offers: new Set(offers.sort(() => {
       return Math.random() - 0.5;
     })

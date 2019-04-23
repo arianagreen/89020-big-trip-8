@@ -8,7 +8,6 @@ class Filter extends Component {
     this._state.isChecked = data.isChecked;
 
     this._onFilter = null;
-
     this._onFilterClick = this._onFilterClick.bind(this);
   }
 

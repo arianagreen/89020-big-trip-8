@@ -31,7 +31,7 @@ const API = class {
       .then(ModelPoint.parsePoints);
   }
 
-  createPoint({point}) {
+  createPoint(point) {
     return this._load({
       url: `points`,
       method: Method.POST,
@@ -73,7 +73,6 @@ const API = class {
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
       .catch((err) => {
-        // console.error(`fetch error: ${err}`);
         throw err;
       });
   }

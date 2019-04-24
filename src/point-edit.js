@@ -34,11 +34,11 @@ class PointEdit extends Component {
         <header class="point__header">
           <label class="point__date">
             choose day
-            <input class="point__input" type="text" placeholder="${this._startTime.toLocaleString(`en`, {month: `short`, day: `numeric`})}" name="day">
+            <input class="point__input" type="text" placeholder="${this._startTime.format(`MMM D`)}" name="day">
           </label>
 
           <div class="travel-way">
-            <label class="travel-way__label" for="travel-way__toggle">${tripTypes[this._event].icon}</label>
+            <label class="travel-way__label" for="travel-way__toggle">${this._event.length > 0 ? tripTypes[this._event].icon : ``}</label>
 
             <input type="checkbox" class="travel-way__toggle visually-hidden" id="travel-way__toggle">
 
@@ -58,8 +58,8 @@ class PointEdit extends Component {
           </div>
 
           <div class="point__destination-wrap">
-            <label class="point__destination-label" for="destination">${tripTypes[this._event].text}</label>
-            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination.name}" name="destination">
+            <label class="point__destination-label" for="destination">${this._event ? tripTypes[this._event].text : ``}</label>
+            <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination.name ? this._destination.name : ``}" name="destination" required>
             <datalist id="destination-select">
               ${(Array.from(destinations).map((destination) => (`
                 <option value="${destination.name}"></option>`.trim()))).join(``)}
@@ -68,14 +68,14 @@ class PointEdit extends Component {
 
           <div class="point__time">
             choose time
-            <input class="point__input" type="text" value="${this._startTime.format(`HH:mm`)}" name="date-start" placeholder="19:00">
-            <input class="point__input" type="text" value="${this._endTime.format(`HH:mm`)}" name="date-end" placeholder="21:00">
+            <input class="point__input" type="text" value="" name="date-start" placeholder="19:00" required>
+            <input class="point__input" type="text" value="" name="date-end" placeholder="21:00" required>
           </div>
 
           <label class="point__price">
             write price
             <span class="point__price-currency">€</span>
-            <input class="point__input" type="text" value="${this._price}" name="price">
+            <input class="point__input" type="text" value="${this._price}" name="price" required>
           </label>
 
           <div class="point__buttons">
@@ -104,7 +104,7 @@ class PointEdit extends Component {
           </section>
           <section class="point__destination">
             <h3 class="point__details-title">Destination</h3>
-            <p class="point__destination-text">${this._destination.description}</p>
+            <p class="point__destination-text">${this._destination.description ? this._destination.description : ``}</p>
             <div class="point__destination-images">
               ${this._destination.pictures ? this._destination.pictures.map((picture) => (`
                   <img src="${picture.src}" alt="${picture.description}" class="point__destination-image">`.trim())).join(``) : ``}
@@ -181,6 +181,7 @@ class PointEdit extends Component {
     }
 
     const entry = {
+      day: ``,
       event: ``,
       destination: {},
       startTime: new Date(),
@@ -199,6 +200,7 @@ class PointEdit extends Component {
       }
     }
 
+    delete entry.day;
     return entry;
   }
 
@@ -228,12 +230,32 @@ class PointEdit extends Component {
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
 
-    const formData = new FormData(this._element.querySelector(`form`));
-    const newData = this._processForm(formData);
-    if (typeof this._onSubmit === `function`) {
-      this._onSubmit(newData);
+    const form = this._element.querySelector(`form`);
+    const travelWayLabel = form.querySelector(`.travel-way__label`);
+    const travelWayToggle = form.querySelector(`.travel-way__toggle`);
+    const requiredInputs = Array.from(this._element.querySelectorAll(`input[required]`));
+
+    for (const input of requiredInputs) {
+      if (input.validity.valueMissing) {
+        input.setCustomValidity(`You have to define ${input.name}`);
+      } else {
+        input.setCustomValidity(``);
+      }
     }
-    this.update(newData);
+
+    if (travelWayLabel.innerHTML.length === 0) {
+      travelWayToggle.setCustomValidity(`You have to choose trip type`);
+    } else {
+      travelWayToggle.setCustomValidity(``);
+    }
+
+    if (form.reportValidity() && travelWayLabel.innerHTML.length > 0) {
+      const formData = new FormData(this._element.querySelector(`form`));
+      const newData = this._processForm(formData);
+      if (typeof this._onSubmit === `function`) {
+        this._onSubmit(newData);
+      }
+    }
   }
 
   _onEscClick(evt) {
@@ -268,8 +290,16 @@ class PointEdit extends Component {
 
     window.addEventListener(`keydown`, this._onEscClick);
 
+    const dayInput = this._element.querySelector(`.point__input[name='day']`);
     const timeStart = this._element.querySelector(`.point__input[name='date-start']`);
     const timeEnd = this._element.querySelector(`.point__input[name='date-end']`);
+
+    flatpickr(dayInput, {
+      altInput: true,
+      altFormat: `D j`,
+      dateFormat: `Y-m-d`,
+      defaultDate: moment(this._startTime).format(`YYYY-MM-DD HH:mm`)
+    });
 
     flatpickr(timeStart, {
       'altInput': true,
@@ -309,13 +339,15 @@ class PointEdit extends Component {
     return {
       'travel-way': (value) => {
         target.event = value;
-        const newOffers = Array.from(offers).find((it) => it.type === value).offers;
-        for (const offer of newOffers) {
-          target.offers.add({
-            title: offer.name,
-            price: offer.price,
-            accepted: false
-          });
+        if (Array.from(offers).find((it) => it.type === value)) {
+          const newOffers = Array.from(offers).find((it) => it.type === value).offers;
+          for (const offer of newOffers) {
+            target.offers.add({
+              title: offer.name,
+              price: offer.price,
+              accepted: false
+            });
+          }
         }
       },
       'destination': (value) => {
@@ -327,6 +359,9 @@ class PointEdit extends Component {
             offer.accepted = true;
           }
         }
+      },
+      'day': (value) => {
+        target.day = value;
       },
       'date-start': (value) => {
         target.startTime = new Date(value);
@@ -340,6 +375,19 @@ class PointEdit extends Component {
       'favorite': (value) => {
         target.isFavorite = value;
       }
+    };
+  }
+
+  static toRaw(newData) {
+    return {
+      'id': newData.id,
+      'type': newData.event,
+      'destination': newData.destination,
+      'date_from': newData.startTime,
+      'date_to': newData.endTime,
+      'base_price': newData.price,
+      'offers': [...newData.offers.values()],
+      'is_favorite': newData.isFavorite
     };
   }
 }

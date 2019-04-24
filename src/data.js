@@ -44,4 +44,15 @@ const tripTypes = {
   }
 };
 
-export {moveEvents, stopEvents, tripTypes};
+const mockData = {
+  id: String(Date.now()),
+  event: ``,
+  destination: {},
+  offers: new Set(),
+  startTime: Date.now(),
+  endTime: Date.now(),
+  price: ``,
+  isFavorite: false,
+};
+
+export {moveEvents, stopEvents, tripTypes, mockData};

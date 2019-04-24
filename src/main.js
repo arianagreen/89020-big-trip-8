@@ -1,12 +1,12 @@
 import API from './api.js';
 import Point from './point.js';
 import PointEdit from './point-edit.js';
-import NewPoint from './new-point.js';
 import Filter from './filter.js';
 import Sort from './sort.js';
 import TripDay from './trip-day.js';
 import TripCost from './trip-cost.js';
 import {getStats, drawCharts} from './stats.js';
+import {mockData} from './data.js';
 import moment from 'moment';
 
 const AUTHORIZATION = `Basic eo0w590ik29889e=`; // ${Math.random()}
@@ -277,14 +277,14 @@ const onError = () => {
 };
 
 const renderNewPoint = () => {
-  const newPointComponent = new NewPoint();
+  const newPointComponent = new PointEdit(mockData);
   newPointComponent.render();
   tripPointsContainer.insertAdjacentElement(`afterbegin`, newPointComponent.element);
 
   newPointComponent.onSubmit = (newData) => {
     newPointComponent.block();
 
-    api.createPoint(NewPoint.toRaw(newData))
+    api.createPoint(PointEdit.toRaw(newData))
       .then(() => {
         newPointComponent.unblock();
         newPointComponent.unrender();

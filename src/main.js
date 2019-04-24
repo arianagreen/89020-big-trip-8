@@ -90,6 +90,7 @@ const statsSwitchBtn = document.querySelector(`.view-switch__item[href='#stats']
 const tripPointsContainer = document.querySelector(`.trip-points`);
 const statisticsSection = document.querySelector(`.statistic`);
 const newPointsButton = document.querySelector(`.trip-controls__new-event`);
+const totalContainer = document.querySelector(`.trip`);
 
 const filterPoints = (points, filter) => {
   return filterActions[filter](points);
@@ -103,20 +104,8 @@ const actualize = (points) => {
   return sortPoints(filterPoints(points, app.filter), app.sorting);
 };
 
-const disableForm = (form) => {
-  for (const element of form.elements) {
-    element.disabled = true;
-  }
-};
-
-const unableForm = (form) => {
-  for (const element of form.elements) {
-    element.disabled = false;
-  }
-};
-
 const renderFilters = (dist, filters) => {
-  let fragment = document.createDocumentFragment();
+  const fragment = document.createDocumentFragment();
   for (const filter of filters) {
     const filterComponent = new Filter(filter);
     fragment.appendChild(filterComponent.render());
@@ -141,7 +130,7 @@ const renderFilters = (dist, filters) => {
 
 const renderSorting = (dist, sortings) => {
   dist.innerHTML = ``;
-  let fragment = document.createDocumentFragment();
+  const fragment = document.createDocumentFragment();
   for (const sort of sortings) {
     const sortingComponent = new Sort(sort);
     fragment.appendChild(sortingComponent.render());
@@ -176,27 +165,13 @@ const renderPoint = (dist, point) => {
     dist.replaceChild(editPointComponent.element, pointComponent.element);
     pointComponent.unrender();
 
-    const form = editPointComponent.element.querySelector(`form`);
-
     editPointComponent.onSubmit = (newData) => {
       point.update(newData);
-
-      const block = () => {
-        disableForm(form);
-        editPointComponent.element.querySelector(`.point__button--save`).textContent = `Saving...`;
-      };
-
-      const unblock = () => {
-        unableForm(form);
-        editPointComponent.element.style = `border: 1px solid red`;
-        editPointComponent.element.querySelector(`.point__button--save`).textContent = `Save`;
-      };
-
-      block();
+      editPointComponent.block(`submit`);
 
       api.updatePoint({id: point.id, data: point.toRaw()})
         .then((newPoint) => {
-          unblock();
+          editPointComponent.unblock(`submit`);
           pointComponent.update(newPoint);
           pointComponent.render();
           dist.replaceChild(pointComponent.element, editPointComponent.element);
@@ -210,7 +185,7 @@ const renderPoint = (dist, point) => {
         })
         .catch(() => {
           editPointComponent.shake();
-          unblock();
+          editPointComponent.unblock(`submit`);
         });
     };
 
@@ -221,18 +196,8 @@ const renderPoint = (dist, point) => {
     };
 
     editPointComponent.onDelete = ({id}) => {
-      const block = () => {
-        disableForm(form);
-        editPointComponent.element.querySelector(`.point__button[type=reset]`).textContent = `Deleting...`;
-      };
+      editPointComponent.block(`delete`);
 
-      const unblock = () => {
-        unableForm(form);
-        editPointComponent.element.style = `border: 1px solid red`;
-        editPointComponent.element.querySelector(`.point__button[type=reset]`).textContent = `Delete`;
-      };
-
-      block();
       api.deletePoint({id})
         .then(() => api.getPoints())
         .then((clearedPoints) => {
@@ -240,7 +205,7 @@ const renderPoint = (dist, point) => {
         })
         .catch(() => {
           editPointComponent.shake();
-          unblock();
+          editPointComponent.unblock(`delete`);
         });
     };
   };
@@ -315,54 +280,41 @@ const renderNewPoint = () => {
   const newPointComponent = new NewPoint();
   newPointComponent.render();
   tripPointsContainer.insertAdjacentElement(`afterbegin`, newPointComponent.element);
-  const form = newPointComponent.element.querySelector(`form`);
-  const submitButton = newPointComponent.element.querySelector(`.point__button--save`);
 
   newPointComponent.onSubmit = (newData) => {
-    const block = () => {
-      disableForm(form);
-      submitButton.textContent = `Saving...`;
-    };
-
-    const unblock = () => {
-      unableForm(form);
-      newPointComponent.element.style = `border: 1px solid red`;
-      submitButton.textContent = `Save`;
-    };
-
-    block();
+    newPointComponent.block();
 
     api.createPoint(NewPoint.toRaw(newData))
       .then(() => {
-        unblock();
+        newPointComponent.unblock();
         newPointComponent.unrender();
+        api.getPoints()
+          .then((points) => {
+            renderPoints(actualize(points));
+            newPointsButton.addEventListener(`click`, onNewPointClick);
+          })
+          .catch(onError);
       })
       .catch(() => {
         newPointComponent.shake();
-        unblock();
+        newPointComponent.unblock();
       });
-
-    api.getPoints()
-      .then((points) => {
-        renderPoints(actualize(points));
-        newPointsButton.addEventListener(`click`, onNewPointClick);
-      })
-      .catch(onError);
   };
 
   newPointComponent.onEsc = () => {
     tripPointsContainer.removeChild(newPointComponent.element);
     newPointComponent.unrender();
+    newPointsButton.addEventListener(`click`, onNewPointClick);
   };
 
   newPointComponent.onDelete = () => {
     tripPointsContainer.removeChild(newPointComponent.element);
     newPointComponent.unrender();
+    newPointsButton.addEventListener(`click`, onNewPointClick);
   };
 };
 
 const renderTotal = (points) => {
-  const totalContainer = document.querySelector(`.trip`);
   totalContainer.removeChild(totalContainer.querySelector(`.trip__total`));
   const costComponent = new TripCost();
   costComponent.count(points);

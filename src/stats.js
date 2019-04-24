@@ -3,6 +3,10 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {moveEvents, tripTypes} from './data.js';
 import moment from 'moment';
 
+const moneyCtx = document.querySelector(`.statistic__money`);
+const transportCtx = document.querySelector(`.statistic__transport`);
+const timeSpendCtx = document.querySelector(`.statistic__time-spend`);
+
 const getStats = (data) => {
   const stats = {
     moneyLabels: [],
@@ -13,10 +17,10 @@ const getStats = (data) => {
     timeData: []
   };
 
-  let tripEventsAndPrices = {}; // объет типа {event: price} без повторов для всех событий
-  let transport = []; // массив всех видов транспорта из поездки
-  let tripTransportAndRepeats = {}; // объет типа {event: price} без повторов для всех видов транспорта
-  let tripEventsAndTime = {}; // объект типа {point: time} без повторов для всех остановок
+  const tripEventsAndPrices = {}; // объет типа {event: price} без повторов для всех событий
+  const transport = []; // массив всех видов транспорта из поездки
+  const tripTransportAndRepeats = {}; // объет типа {event: price} без повторов для всех видов транспорта
+  const tripEventsAndTime = {}; // объект типа {point: time} без повторов для всех остановок
 
   for (const point of data) {
 
@@ -71,10 +75,6 @@ const getStats = (data) => {
 };
 
 const drawCharts = (statsObj) => {
-  const moneyCtx = document.querySelector(`.statistic__money`);
-  const transportCtx = document.querySelector(`.statistic__transport`);
-  const timeSpendCtx = document.querySelector(`.statistic__time-spend`);
-
   moneyCtx.innerHTML = ``;
   transportCtx.innerHTML = ``;
 

@@ -23,21 +23,9 @@ class NewPoint extends Component {
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onEscClick = this._onEscClick.bind(this);
-    this._onWayChange = this._onWayChange.bind(this);
     this._onDeleteClick = this._onDeleteClick.bind(this);
+    this._onWayChange = this._onWayChange.bind(this);
     this._onDestinationChange = this._onDestinationChange.bind(this);
-  }
-
-  set onSubmit(fn) {
-    this._onSubmit = fn;
-  }
-
-  set onEsc(fn) {
-    this._onEsc = fn;
-  }
-
-  set onDelete(fn) {
-    this._onDelete = fn;
   }
 
   get template() {
@@ -128,11 +116,53 @@ class NewPoint extends Component {
     </article>`;
   }
 
+  set onSubmit(fn) {
+    this._onSubmit = fn;
+  }
+
+  set onEsc(fn) {
+    this._onEsc = fn;
+  }
+
+  set onDelete(fn) {
+    this._onDelete = fn;
+  }
+
+  block() {
+    const form = this._element.querySelector(`form`);
+
+    for (const element of form.elements) {
+      element.disabled = true;
+    }
+
+    form.querySelector(`.point__button--save`).innerHTML = `Saving...`;
+  }
+
+  unblock() {
+    const form = this._element.querySelector(`form`);
+
+    for (const element of form.elements) {
+      element.disabled = false;
+    }
+
+    this._element.style = `border: 1px solid red`;
+    form.querySelector(`.point__button--save`).innerHTML = `Save`;
+  }
+
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.classList.add(`shake`);
+
+    setTimeout(() => {
+      this._element.classList.remove(`shake`);
+    }, ANIMATION_TIMEOUT);
+  }
+
   _processForm(formData) {
     const entry = {
+      day: ``,
       event: ``,
       destination: {},
-      day: ``,
       startTime: new Date(),
       endTime: new Date(),
       offers: new Set(),
@@ -182,6 +212,8 @@ class NewPoint extends Component {
     evt.preventDefault();
 
     const form = this._element.querySelector(`form`);
+    const travelWayLabel = form.querySelector(`.travel-way__label`);
+    const travelWayToggle = form.querySelector(`.travel-way__toggle`);
     const requiredInputs = Array.from(this._element.querySelectorAll(`input[required]`));
 
     for (const input of requiredInputs) {
@@ -192,13 +224,13 @@ class NewPoint extends Component {
       }
     }
 
-    if (form.querySelector(`.travel-way__label`).innerHTML.length === 0) {
-      form.querySelector(`.travel-way__toggle`).setCustomValidity(`You have to choose trip type`);
+    if (travelWayLabel.innerHTML.length === 0) {
+      travelWayToggle.setCustomValidity(`You have to choose trip type`);
     } else {
-      form.querySelector(`.travel-way__toggle`).setCustomValidity(``);
+      travelWayToggle.setCustomValidity(``);
     }
 
-    if (form.reportValidity() && form.querySelector(`.travel-way__label`).innerHTML.length > 0) {
+    if (form.reportValidity() && travelWayLabel.innerHTML.length > 0) {
       const formData = new FormData(this._element.querySelector(`form`));
       const newData = this._processForm(formData);
       if (typeof this._onSubmit === `function`) {
@@ -281,15 +313,6 @@ class NewPoint extends Component {
                 .removeEventListener(`change`, this._onDestinationChange);
 
     window.removeEventListener(`keydown`, this._onEscClick);
-  }
-
-  shake() {
-    const ANIMATION_TIMEOUT = 600;
-    this._element.classList.add(`shake`);
-
-    setTimeout(() => {
-      this._element.classList.remove(`shake`);
-    }, ANIMATION_TIMEOUT);
   }
 
   static createMapper(target) {

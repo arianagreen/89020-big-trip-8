@@ -28,18 +28,6 @@ class PointEdit extends Component {
     this._onDestinationChange = this._onDestinationChange.bind(this);
   }
 
-  set onSubmit(fn) {
-    this._onSubmit = fn;
-  }
-
-  set onEsc(fn) {
-    this._onEsc = fn;
-  }
-
-  set onDelete(fn) {
-    this._onDelete = fn;
-  }
-
   get template() {
     return `<article class="point">
       <form action="" method="get">
@@ -126,6 +114,65 @@ class PointEdit extends Component {
         </section>
       </form>
     </article>`;
+  }
+
+  set onSubmit(fn) {
+    this._onSubmit = fn;
+  }
+
+  set onEsc(fn) {
+    this._onEsc = fn;
+  }
+
+  set onDelete(fn) {
+    this._onDelete = fn;
+  }
+
+  block(action) {
+    const form = this._element.querySelector(`form`);
+    for (const element of form.elements) {
+      element.disabled = true;
+    }
+
+    if (action === `submit`) {
+      form.querySelector(`.point__button--save`).innerHTML = `Saving...`;
+    } else {
+      form.querySelector(`.point__button[type=reset]`).innerHTML = `Deleting...`;
+    }
+  }
+
+  unblock(action) {
+    const form = this._element.querySelector(`form`);
+    for (const element of form.elements) {
+      element.disabled = false;
+    }
+
+    this._element.style = `border: 1px solid red`;
+
+    if (action === `submit`) {
+      form.querySelector(`.point__button--save`).innerHTML = `Save`;
+    } else {
+      form.querySelector(`.point__button[type=reset]`).innerHTML = `Delete`;
+    }
+  }
+
+  update(data) {
+    this._event = data.event;
+    this._destination = data.destination;
+    this._offers = data.offers;
+    this._startTime = moment(data.startTime);
+    this._endTime = moment(data.endTime);
+    this._price = data.price;
+    this._state.isFavorite = data.isFavorite;
+  }
+
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.classList.add(`shake`);
+
+    setTimeout(() => {
+      this._element.classList.remove(`shake`);
+    }, ANIMATION_TIMEOUT);
   }
 
   _processForm(formData) {
@@ -256,25 +303,6 @@ class PointEdit extends Component {
                 .removeEventListener(`change`, this._onDestinationChange);
 
     window.removeEventListener(`keydown`, this._onEscClick);
-  }
-
-  update(data) {
-    this._event = data.event;
-    this._destination = data.destination;
-    this._offers = data.offers;
-    this._startTime = moment(data.startTime);
-    this._endTime = moment(data.endTime);
-    this._price = data.price;
-    this._state.isFavorite = data.isFavorite;
-  }
-
-  shake() {
-    const ANIMATION_TIMEOUT = 600;
-    this._element.classList.add(`shake`);
-
-    setTimeout(() => {
-      this._element.classList.remove(`shake`);
-    }, ANIMATION_TIMEOUT);
   }
 
   static createMapper(target) {

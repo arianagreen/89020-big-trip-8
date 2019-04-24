@@ -20,16 +20,6 @@ class Point extends Component {
     this._onElementClick = this._onElementClick.bind(this);
   }
 
-  _onElementClick() {
-    if (typeof this._onEdit === `function`) {
-      this._onEdit();
-    }
-  }
-
-  set onEdit(fn) {
-    this._onEdit = fn;
-  }
-
   get duration() {
     const diffD = this._endTime.diff(this._startTime, `days`);
     const diffH = this._endTime.diff(this._startTime, `hours`) - (diffD * 24);
@@ -61,12 +51,8 @@ class Point extends Component {
     </article>`;
   }
 
-  bind() {
-    this._element.addEventListener(`click`, this._onElementClick);
-  }
-
-  unbind() {
-    this._element.removeEventListener(`click`, this._onElementClick);
+  set onEdit(fn) {
+    this._onEdit = fn;
   }
 
   update(data) {
@@ -77,6 +63,20 @@ class Point extends Component {
     this._endTime = moment(data.endTime);
     this._price = data.price;
     this._state.isFavorite = data.isFavorite;
+  }
+
+  _onElementClick() {
+    if (typeof this._onEdit === `function`) {
+      this._onEdit();
+    }
+  }
+
+  bind() {
+    this._element.addEventListener(`click`, this._onElementClick);
+  }
+
+  unbind() {
+    this._element.removeEventListener(`click`, this._onElementClick);
   }
 }
 

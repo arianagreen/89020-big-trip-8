@@ -15,15 +15,15 @@ class Filter extends Component {
     this._onFilter = fn;
   }
 
+  get template() {
+    return `<input type="radio" id="filter-${this._name}" name="filter" value="${this._name}" ${this._state.isChecked ? `checked` : ``}>
+    <label class="trip-filter__item" for="filter-${this._name}">${utils.capitalizeFirstLetter(this._name)}</label>`;
+  }
+
   _onFilterClick(evt) {
     if (typeof this._onFilter === `function`) {
       this._onFilter(evt);
     }
-  }
-
-  get template() {
-    return `<input type="radio" id="filter-${this._name}" name="filter" value="${this._name}" ${this._state.isChecked ? `checked` : ``}>
-    <label class="trip-filter__item" for="filter-${this._name}">${utils.capitalizeFirstLetter(this._name)}</label>`;
   }
 
   bind() {

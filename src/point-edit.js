@@ -128,20 +128,20 @@ class PointEdit extends Component {
     this._onDelete = fn;
   }
 
-  block(action) {
+  block(action = `submit`) {
     const form = this._element.querySelector(`form`);
     for (const element of form.elements) {
       element.disabled = true;
     }
 
-    if (action === `submit`) {
-      form.querySelector(`.point__button--save`).innerHTML = `Saving...`;
-    } else {
+    if (action === `delete`) {
       form.querySelector(`.point__button[type=reset]`).innerHTML = `Deleting...`;
+    } else {
+      form.querySelector(`.point__button--save`).innerHTML = `Saving...`;
     }
   }
 
-  unblock(action) {
+  unblock(action = `submit`) {
     const form = this._element.querySelector(`form`);
     for (const element of form.elements) {
       element.disabled = false;
@@ -149,10 +149,10 @@ class PointEdit extends Component {
 
     this._element.style = `border: 1px solid red`;
 
-    if (action === `submit`) {
-      form.querySelector(`.point__button--save`).innerHTML = `Save`;
-    } else {
+    if (action === `delete`) {
       form.querySelector(`.point__button[type=reset]`).innerHTML = `Delete`;
+    } else {
+      form.querySelector(`.point__button--save`).innerHTML = `Save`;
     }
   }
 

@@ -167,11 +167,11 @@ const renderPoint = (dist, point) => {
 
     editPointComponent.onSubmit = (newData) => {
       point.update(newData);
-      editPointComponent.block(`submit`);
+      editPointComponent.block();
 
       api.updatePoint({id: point.id, data: point.toRaw()})
         .then((newPoint) => {
-          editPointComponent.unblock(`submit`);
+          editPointComponent.unblock();
           pointComponent.update(newPoint);
           pointComponent.render();
           dist.replaceChild(pointComponent.element, editPointComponent.element);
@@ -185,7 +185,7 @@ const renderPoint = (dist, point) => {
         })
         .catch(() => {
           editPointComponent.shake();
-          editPointComponent.unblock(`submit`);
+          editPointComponent.unblock();
         });
     };
 
@@ -286,7 +286,6 @@ const renderNewPoint = () => {
 
     api.createPoint(PointEdit.toRaw(newData))
       .then(() => {
-        newPointComponent.unblock();
         newPointComponent.unrender();
         api.getPoints()
           .then((points) => {
